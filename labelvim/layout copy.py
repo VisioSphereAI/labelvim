@@ -136,7 +136,6 @@ class Ui_MainWindow(object):
         # self.Display.setFrameShadow(QtWidgets.QFrame.Raised)
         # self.Display.setLineWidth(9)
         # self.Display.setText("")
-        # self.Display.setScaledContents(True)
         # self.Display.setAlignment(QtCore.Qt.AlignCenter)
         # self.Display.setObjectName("Display")
         self.label_5 = QtWidgets.QLabel(self.centralwidget)

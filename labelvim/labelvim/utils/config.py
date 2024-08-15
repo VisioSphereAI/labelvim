@@ -8,3 +8,11 @@ class ANNOTATION_TYPE(Enum):
     # ELLIPSE = 4
     RECTANGLE = 4
     POLYGON = 5
+
+class ANNOTATION_MODE(Enum):
+    NONE = 0
+    CREATE = 1
+    EDIT = 2
+    DELETE = 3
+    DUPLICATE = 4
+    CLEAR = 6
