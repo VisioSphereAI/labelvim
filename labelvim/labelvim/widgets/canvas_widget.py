@@ -26,13 +26,13 @@ class CanvasWidget(QLabel):
         self.setAlignment(Qt.AlignCenter)
         
         # set scroll area
-        # self.scroll_area = QScrollArea(parent)
-        # self.scroll_area.setWidget(self)
-        # self.scroll_area.setWidgetResizable(True)
-        # self.scroll_area.setAlignment(Qt.AlignCenter)
-        # self.scroll_area.setGeometry(70, 0, 1321, 801)
-        # self.scroll_area.setFrameShape(QFrame.Box | QFrame.Plain)
-        # self.scroll_area.setFrameShadow(QFrame.Sunken)
+        self.scroll_area = QScrollArea(parent)
+        self.scroll_area.setWidget(self)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setAlignment(Qt.AlignCenter)
+        self.scroll_area.setGeometry(70, 0, 1321, 801)
+        self.scroll_area.setFrameShape(QFrame.Box | QFrame.Plain)
+        self.scroll_area.setFrameShadow(QFrame.Sunken)
         
         self.start_point = None
         self.end_point = None
