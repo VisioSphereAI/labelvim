@@ -149,16 +149,6 @@ class CanvasWidget(QLabel):
                 start_point = self.map_to_original_image(click_pos)
                 if start_point:
                     self.start_point = start_point
-                # displayed_image_size = self.current_pixmap.size()
-                # offset_x = (self.width() - self.current_pixmap.width()) // 2
-                # offset_y = (self.height() - self.current_pixmap.height()) // 2
-                # relative_x = click_pos.x() - offset_x
-                # relative_y = click_pos.y() - offset_y
-                # if 0 <= relative_x < displayed_image_size.width() and 0 <= relative_y < displayed_image_size.height():
-                #     original_x = int(relative_x / self.scale_factor)
-                #     original_y = int(relative_y / self.scale_factor)
-                #     # print(f"Original X: {original_x}, Original Y: {original_y}")
-                #     self.start_point = QPoint(original_x, original_y)
         self.update()
 
     def mouseMoveEvent(self, event):
@@ -168,15 +158,6 @@ class CanvasWidget(QLabel):
                 end_point = self.map_to_original_image(click_pos)
                 if end_point:
                     self.end_point = end_point
-                # displayed_image_size = self.current_pixmap.size()
-                # offset_x = (self.width() - self.current_pixmap.width()) // 2
-                # offset_y = (self.height() - self.current_pixmap.height()) // 2
-                # relative_x = click_pos.x() - offset_x
-                # relative_y = click_pos.y() - offset_y
-                # if 0 <= relative_x < displayed_image_size.width() and 0 <= relative_y < displayed_image_size.height():
-                #     original_x = int(relative_x / self.scale_factor)
-                #     original_y = int(relative_y / self.scale_factor)
-                #     self.end_point = QPoint(original_x, original_y)
         self.update()
     
     def mouseReleaseEvent(self, event):
@@ -186,16 +167,6 @@ class CanvasWidget(QLabel):
                 end_point = self.map_to_original_image(click_pos)
                 if end_point:
                     self.end_point = end_point
-                # displayed_image_size = self.current_pixmap.size()
-                # offset_x = (self.width() - self.current_pixmap.width()) // 2
-                # offset_y = (self.height() - self.current_pixmap.height()) // 2
-                # relative_x = click_pos.x() - offset_x
-                # relative_y = click_pos.y() - offset_y
-                # if 0 <= relative_x < displayed_image_size.width() and 0 <= relative_y < displayed_image_size.height():
-                #     original_x = int(relative_x / self.scale_factor)
-                #     original_y = int(relative_y / self.scale_factor)
-                #     # print(f"Original X: {original_x}, Original Y: {original_y}")
-                #     self.end_point = QPoint(original_x, original_y)
                     rect = QRect(self.start_point, self.end_point).normalized()
                     if self.distance(self.start_point, self.end_point) > 20:
                         label_selected = self.select_label_from_label_list()
