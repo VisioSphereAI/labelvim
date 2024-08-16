@@ -1,0 +1,15 @@
+Circle:
+- Circle
+Line:
+- Line
+Point:
+- Point
+Polygon:
+- Car
+- Person
+- Truck
+- Van
+Rectangle:
+- Person
+- Car
+- test
