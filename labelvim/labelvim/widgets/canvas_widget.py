@@ -144,11 +144,14 @@ class CanvasWidget(QLabel):
             
     def mousePressEvent(self, event):
         if self.original_pixmap:
-            if event.button() == Qt.LeftButton and self.annotation_mode == ANNOTATION_MODE.CREATE:
-                click_pos = event.pos()
-                start_point = self.map_to_original_image(click_pos)
-                if start_point:
-                    self.start_point = start_point
+            click_pos = event.pos()
+            if event.button() == Qt.LeftButton:
+                if self.annotation_mode == ANNOTATION_MODE.CREATE:
+                    start_point = self.map_to_original_image(click_pos)
+                    if start_point:
+                        self.start_point = start_point
+                if self.annotation_mode == ANNOTATION_MODE.EDIT:
+                    self.select_rectange(click_pos)
         self.update()
 
     def mouseMoveEvent(self, event):
@@ -262,6 +265,21 @@ class CanvasWidget(QLabel):
         if 0 <= relative_x < displayed_image_size.width() and 0 <= relative_y < displayed_image_size.height():
             return QPoint(int(relative_x / self.scale_factor), int(relative_y / self.scale_factor))
         return None
+    
+    def select_rectange(self, pos):
+        """
+        Select a rectangle on the displayed image.
+        
+        Args:
+        
+            pos (QPoint): The position on the displayed image.
+        """
+        for rect in self.rectangles:
+            rect_obj = QRect(rect["bbox"][0], rect["bbox"][1], rect["bbox"][2], rect["bbox"][3])
+            if rect_obj.contains(self.map_to_original_image(pos)):
+                self.selected_rectangles = rect["id"]
+                print(f"Selected Rectangle: {self.selected_rectangles}")
+                break
     
     def select_label_from_label_list(self):
         """Generate a label selection popup dialog."""
