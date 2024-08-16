@@ -15,4 +15,13 @@ class ANNOTATION_MODE(Enum):
     EDIT = 2
     DELETE = 3
     DUPLICATE = 4
-    CLEAR = 6
+    CLEAR = 5
+
+class OBJECT_LIST_ACTION(Enum):
+    ADD = 0
+    REMOVE = 1
+    UPDATE = 2
+    CLICKED = 3
+    CLEAR = 4
+    EDIT = 5
+    NONE = 6

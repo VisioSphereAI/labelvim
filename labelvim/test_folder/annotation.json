@@ -1,5 +1,198 @@
 {
-    "annotations": [],
+    "annotations": [
+        {
+            "id": 0,
+            "category_id": 4,
+            "bbox": [
+                18,
+                38,
+                47,
+                48
+            ],
+            "area": 2256,
+            "segmentation": [
+                [
+                    18,
+                    38,
+                    65,
+                    38,
+                    65,
+                    86,
+                    18,
+                    86
+                ]
+            ],
+            "iscrowd": 0
+        },
+        {
+            "id": 1,
+            "category_id": 6,
+            "bbox": [
+                86,
+                19,
+                35,
+                61
+            ],
+            "area": 2135,
+            "segmentation": [
+                [
+                    86,
+                    19,
+                    121,
+                    19,
+                    121,
+                    80,
+                    86,
+                    80
+                ]
+            ],
+            "iscrowd": 0
+        },
+        {
+            "id": 2,
+            "category_id": 10,
+            "bbox": [
+                147,
+                15,
+                43,
+                64
+            ],
+            "area": 2752,
+            "segmentation": [
+                [
+                    147,
+                    15,
+                    190,
+                    15,
+                    190,
+                    79,
+                    147,
+                    79
+                ]
+            ],
+            "iscrowd": 0
+        },
+        {
+            "id": 3,
+            "category_id": 5,
+            "bbox": [
+                218,
+                17,
+                49,
+                72
+            ],
+            "area": 3528,
+            "segmentation": [
+                [
+                    218,
+                    17,
+                    267,
+                    17,
+                    267,
+                    89,
+                    218,
+                    89
+                ]
+            ],
+            "iscrowd": 0
+        },
+        {
+            "id": 4,
+            "category_id": 7,
+            "bbox": [
+                23,
+                104,
+                79,
+                54
+            ],
+            "area": 4266,
+            "segmentation": [
+                [
+                    23,
+                    104,
+                    102,
+                    104,
+                    102,
+                    158,
+                    23,
+                    158
+                ]
+            ],
+            "iscrowd": 0
+        },
+        {
+            "id": 5,
+            "category_id": 9,
+            "bbox": [
+                120,
+                93,
+                80,
+                48
+            ],
+            "area": 3840,
+            "segmentation": [
+                [
+                    120,
+                    93,
+                    200,
+                    93,
+                    200,
+                    141,
+                    120,
+                    141
+                ]
+            ],
+            "iscrowd": 0
+        },
+        {
+            "id": 6,
+            "category_id": 2,
+            "bbox": [
+                191,
+                147,
+                75,
+                29
+            ],
+            "area": 2175,
+            "segmentation": [
+                [
+                    191,
+                    147,
+                    266,
+                    147,
+                    266,
+                    176,
+                    191,
+                    176
+                ]
+            ],
+            "iscrowd": 0
+        },
+        {
+            "id": 7,
+            "category_id": 11,
+            "bbox": [
+                207,
+                92,
+                82,
+                44
+            ],
+            "area": 3608,
+            "segmentation": [
+                [
+                    207,
+                    92,
+                    289,
+                    92,
+                    289,
+                    136,
+                    207,
+                    136
+                ]
+            ],
+            "iscrowd": 0
+        }
+    ],
     "imagePath": "annotation.jpg",
     "imageData": null,
     "imageHeight": 295,
