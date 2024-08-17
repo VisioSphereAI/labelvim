@@ -1,6 +1,6 @@
 <h1 align="center">
-  <img src="resource/screen_shot/Screenshot 2024-08-17 113258.png">
-  <img src="resource/screen_shot/Screenshot 2024-08-17 120032.png">
+  <img width = "45%" src="resource/screen_shot/Screenshot 2024-08-17 113258.png">
+  <img width = "45%" src="resource/screen_shot/Screenshot 2024-08-17 120032.png">
    <br/>labelvim
 </h1>
 
