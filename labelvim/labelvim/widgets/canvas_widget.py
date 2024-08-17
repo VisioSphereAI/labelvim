@@ -48,6 +48,8 @@ class CanvasWidget(QLabel):
         self.title_pen_color = QColor(0, 255, 255)
         self.selected_rectangle_brush_color = QColor(255, 0, 0, 50)
         self.selected_rectangles = None  # List to store selected rectangles
+        self.selected_vertex = None
+        self.moving_rectangle = False
         self.last_mouse_position = QPoint()  # Store the last mouse position
         # self.pixmap = None  # To store the loaded pixmap
         self.label_list = []
@@ -62,6 +64,7 @@ class CanvasWidget(QLabel):
         self.zoom_in_scale_factor = 1.25
         self.zoom_out_scale_factor = 0.8
         self.max_scale_factor = 6
+        self.point_click_radious = 5 # The radious of the point click
 
     def load_image(self, file_name):
         self.clear_annotation()
@@ -73,9 +76,6 @@ class CanvasWidget(QLabel):
         # print(f"File Name: {file_name}")
         self.original_pixmap = QPixmap(file_name)
         self.current_pixmap = self.original_pixmap.copy()
-        # print(f"current pixmap size: {self.current_pixmap.size()}")
-        # print(f"Original Pixmap Size: {self.original_pixmap.size()}")
-        # print(f"size geometry: {self.size_geometry.size()}")
         scale_factor = self.size_geometry.width() / self.current_pixmap.width()
         self.max_scale_factor = 4 * scale_factor
         self.min_scale_factor = 0.25 * scale_factor
@@ -141,7 +141,8 @@ class CanvasWidget(QLabel):
         else:
             self.zoom_out()
     
-            
+    ## Start of mouse events
+
     def mousePressEvent(self, event):
         if self.original_pixmap:
             click_pos = event.pos()
@@ -151,16 +152,26 @@ class CanvasWidget(QLabel):
                     if start_point:
                         self.start_point = start_point
                 if self.annotation_mode == ANNOTATION_MODE.EDIT:
-                    self.select_rectange(click_pos)
+                    self.select_rectangle(click_pos)
+                    if self.selected_rectangles is not None:
+                        self.start_drag_point = click_pos
+                        self.dragging = True
+                    # self.resizing = self.is_resizing(click_pos)
+
         self.update()
 
     def mouseMoveEvent(self, event):
         if self.original_pixmap:
+            click_pos = event.pos()
             if self.start_point and self.annotation_mode == ANNOTATION_MODE.CREATE:
-                click_pos = event.pos()
                 end_point = self.map_to_original_image(click_pos)
                 if end_point:
                     self.end_point = end_point
+            elif self.annotation_mode == ANNOTATION_MODE.EDIT and self.dragging:
+                # if self.resizing:
+                #     self.resize_rectangle(click_pos)
+                # else:
+                self.move_rectangle(click_pos)
         self.update()
     
     def mouseReleaseEvent(self, event):
@@ -188,6 +199,10 @@ class CanvasWidget(QLabel):
                 else:
                     self.start_point = None
                     self.end_point = None
+        self.dragging = False
+        self.selected_rectangles = None
+        self.update()
+
     def paintEvent(self, event):
         super().paintEvent(event)
         if self.current_pixmap:
@@ -266,21 +281,77 @@ class CanvasWidget(QLabel):
             return QPoint(int(relative_x / self.scale_factor), int(relative_y / self.scale_factor))
         return None
     
-    def select_rectange(self, pos):
+    def select_rectangle(self, pos):
         """
-        Select a rectangle on the displayed image.
+        Select the rectangle nearest to the selected point on the displayed image.
         
         Args:
-        
             pos (QPoint): The position on the displayed image.
+            
+        Returns:
+            dict: The selected rectangle dictionary with its attributes.
         """
+        selected_rectangles = []
+        selected_rectangles_id = []
+
+        # Map the click position to the original image coordinates
+        mapped_pos = self.map_to_original_image(pos)
+
+        # Iterate through all rectangles to find the ones containing the point
         for rect in self.rectangles:
             rect_obj = QRect(rect["bbox"][0], rect["bbox"][1], rect["bbox"][2], rect["bbox"][3])
-            if rect_obj.contains(self.map_to_original_image(pos)):
-                self.selected_rectangles = rect["id"]
-                print(f"Selected Rectangle: {self.selected_rectangles}")
-                break
+            if rect_obj.contains(mapped_pos):
+                selected_rectangles.append(rect)
+                selected_rectangles_id.append(rect["id"])
+
+        # If multiple rectangles contain the point, find the one closest to the point
+        if selected_rectangles:
+            closest_rect = min(
+                selected_rectangles,
+                key=lambda rect: self.distance_to_center(mapped_pos, rect["bbox"])
+            )
+            self.selected_rectangles = closest_rect["id"]
+
+
+    def distance_to_center(self, pos, bbox):
+        """
+        Calculate the distance from a point to the center of a bounding box.
+        
+        Args:
+            pos (QPoint): The position point.
+            bbox (list): The bounding box coordinates [x, y, width, height].
+            
+        Returns:
+            float: The distance from the point to the center of the bounding box.
+        """
+        center_x = bbox[0] + bbox[2] / 2
+        center_y = bbox[1] + bbox[3] / 2
+        return (pos.x() - center_x) ** 2 + (pos.y() - center_y) ** 2
     
+    def get_selected_rectangle(self):
+        """
+        Get the selected rectangle.
+        
+        Returns:
+        
+            dict: The selected rectangle.
+        """
+        for rect in self.rectangles:
+            if rect["id"] == self.selected_rectangles:
+                return rect
+        return None
+    
+    def move_rectangle(self, new_pos):
+        if self.selected_rectangles is not None:
+            rect = self.get_selected_rectangle()
+            if rect is not None:
+                dx = new_pos.x() - self.start_drag_point.x()
+                dy = new_pos.y() - self.start_drag_point.y()
+                rect["bbox"][0] += int(dx / self.scale_factor)
+                rect["bbox"][1] += int(dy / self.scale_factor)
+                self.start_drag_point = new_pos
+    
+
     def select_label_from_label_list(self):
         """Generate a label selection popup dialog."""
         dialog = LabelPopup(self.label_list,self.update_label_list_slot_transmitter, self)
