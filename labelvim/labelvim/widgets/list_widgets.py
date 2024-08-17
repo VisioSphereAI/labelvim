@@ -1,10 +1,11 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QStringListModel, Qt, QRect, pyqtSignal
+from PyQt5.QtCore import QStringListModel, Qt, QRect, pyqtSignal, QModelIndex, pyqtSlot
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QInputDialog, QMessageBox, QMenu, QAction
 
 # External imports
 from labelvim.utils.config import ANNOTATION_TYPE, OBJECT_LIST_ACTION
+from labelvim.widgets.custom_delegets import CustomDelegate
 from enum import Enum
 
 class CustomListViewWidget(QtWidgets.QListView):
@@ -62,7 +63,7 @@ class CustomListViewWidget(QtWidgets.QListView):
         Args:
             label_list (list, optional): A list of label names to display. Defaults to an empty list.
         """
-        print(f"Label List in set label list: {label_list}")
+        # print(f"Label List in set label list: {label_list}")
         if isinstance(label_list, list) and len(label_list) > 0:
             self.model.clear()  # Clear the model before updating
             self.label_list = label_list
@@ -176,8 +177,8 @@ class CustomListViewWidget(QtWidgets.QListView):
             event (QMouseEvent): The mouse event object.
         """
         index = self.indexAt(event.pos())
-        print(f"Index: {index.row()}")
-        print(f"model row count {self.model.rowCount()}")
+        # print(f"Index: {index.row()}")
+        # print(f"model row count {self.model.rowCount()}")
         if index.isValid():
             item = self.model.itemFromIndex(index)
             print(f"Item: {item.text()}")
@@ -230,6 +231,8 @@ class CustomLabelWidget(QtWidgets.QListView):
         # Set the geometry, model
         self.set_geometry()
         self.set_model()
+        self.delegate = CustomDelegate(self)
+        self.setItemDelegate(self.delegate)
         # Set the annotation type to None
         self.annotation_type = "Rectangle"
         # Connect the signals
@@ -387,6 +390,7 @@ class CustomLabelWidget(QtWidgets.QListView):
         # Start editing the item at the specified index
         self.edit(index)
     
+    
     def on_data_changed(self, topLeft, bottomRight, roles):
         """
         Slot that is triggered when the data in the model is changed.
@@ -438,7 +442,7 @@ class CustomObjectListWidget(QtWidgets.QListView):
         self.set_label_list(self.label_list)
         # Connect the signals
         self.object_list_slot_receiver.connect(self.__receiver_action) # Connect the signal to update the label list
-        # self.model.dataChanged.connect(self.on_data_changed)  # Connect the dataChanged signal
+        # self.model.dataChanged.connect(self.handle_data_changed)  # Connect the dataChanged signal
 
     def set_geometry(self):
         """
@@ -455,7 +459,7 @@ class CustomObjectListWidget(QtWidgets.QListView):
         self.setModel(self.model)
         self.setUpdatesEnabled(True)
         # # Set the edit triggers to NoEditTriggers
-        # self.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
+        self.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
     
     def __receiver_action(self, data: any, action: Enum):
         data = data[0]
@@ -556,6 +560,14 @@ class CustomObjectListWidget(QtWidgets.QListView):
             object_list = [f"{self.label_list[id]}" for id in self.category_id] 
             self.model.setStringList(object_list)
     
+    def refresh_list(self, label_list: list):
+        """
+        Refresh the list view
+        """
+        self.label_list = label_list
+        object_list = [f"{self.label_list[id]}" for id in self.category_id]
+        self.model.setStringList(object_list)
+    
     def on_item_clicked(self, index):
         """
         Emits the signal with the currently selected item's text.
@@ -564,8 +576,8 @@ class CustomObjectListWidget(QtWidgets.QListView):
             index (QModelIndex): The index of the current item.
         """
         # Emit the signal with the selected item's text
-        print(f"Index: {index.row()}")
-        print(f"Item: {self.model.data(index, Qt.DisplayRole)}")
+        # print(f"Index: {index.row()}")
+        # print(f"Item: {self.model.data(index, Qt.DisplayRole)}")
         id = self.object_id[index.row()]
         self.object_selection_notification_slot.emit(id)
     
@@ -582,3 +594,55 @@ class CustomObjectListWidget(QtWidgets.QListView):
             self.object_selection_notification_slot.emit(-1)
         # Call the parent class's mousePressEvent to handle normal clicks
         super().mousePressEvent(event)
+    
+    # def contextMenuEvent(self, event):
+    #     """
+    #     Handles the context menu event, providing an option to edit the selected item.
+
+    #     Args:
+    #         event (QContextMenuEvent): The context menu event object.
+    #     """
+    #     # Get the index at the mouse position
+    #     index = self.indexAt(event.pos()) 
+    #     # Check if the index is valid
+    #     if index.isValid():
+    #         # Create a context menu
+    #         menu = QMenu(self) 
+    #         # Create an action to edit the item
+    #         edit_action = QAction('Edit', self)
+    #         # Connect the action to the edit_label method
+    #         edit_action.triggered.connect(lambda: self.edit_label_at_index(index)) 
+    #         # Add the action to the menu
+    #         menu.addAction(edit_action)
+    #         # Show the context menu at the mouse position
+    #         menu.exec_(event.globalPos())
+    
+    # def edit_label_at_index(self, index):
+    #     """
+    #     Triggers inline editing for the selected item.
+
+    #     Args:
+    #         index (QModelIndex): The index of the item to be edited.
+    #     """
+    #     # Start editing the item at the specified index
+    #     self.edit(index)
+
+    # @pyqtSlot(QModelIndex, QModelIndex)
+    # def handle_data_changed(self, top_left: QModelIndex, bottom_right: QModelIndex):
+    #     """
+    #     Slot to handle data changes in the list view.
+
+    #     Args:
+    #         top_left (QModelIndex): The top-left index of the changed data.
+    #         bottom_right (QModelIndex): The bottom-right index of the changed data.
+    #     """
+    #     row = top_left.row()
+    #     # get index of the item and old data
+        
+
+
+
+
+    #     new_data = self.model.data(top_left, Qt.EditRole)
+    #     print(f"Item at row {row} was changed to '{new_data}'")
+    #     # Optionally, you can update your data model or UI here
