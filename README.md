@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="resource/screen_shot/creenshot 2024-08-17 113258.png">
+  <img src="resource/screen_shot/Screenshot 2024-08-17 113258.png">
   <img src="resource/screen_shot/Screenshot 2024-08-17 120032.png">
    <br/>labelme
 </h1>
@@ -21,6 +21,7 @@
   | <a href="#examples"><b>Examples</b></a>
 </div>
 <br/>
+
 ## Demo Video
 - [Annotation](resource/videos/Annotation_object.mp4)
 - [Edit Annotation](resource/videos/Edit_annotation.mp4)
