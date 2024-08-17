@@ -152,10 +152,21 @@ class CanvasWidget(QLabel):
                     if start_point:
                         self.start_point = start_point
                 if self.annotation_mode == ANNOTATION_MODE.EDIT:
-                    self.select_rectangle(click_pos)
-                    if self.selected_rectangles is not None:
-                        self.start_drag_point = click_pos
-                        self.dragging = True
+                    self.selected_rectangles, self.selected_vertex = self.find_object_to_edit(click_pos)
+                    print(f"Selected Rectangle: {self.selected_rectangles}, Selected Vertex: {self.selected_vertex}")
+                    if self.selected_vertex is None and self.selected_rectangles is None:
+                        # Start moving the rectangle if no vertex is selected
+                        self.moving_rectangle = True
+                        self.last_mouse_position = self.map_to_original_image(click_pos)
+                        if self.last_mouse_position is None:
+                            self.moving_rectangle = False
+                        else:
+                            self.select_rectangle(self.last_mouse_position)
+                        print(f"Selected Rectangle: {self.selected_rectangles}")
+                    # self.select_rectangle(click_pos)
+                    # if self.selected_rectangles is not None:
+                    #     self.start_drag_point = click_pos
+                    #     self.dragging = True
                     # self.resizing = self.is_resizing(click_pos)
 
         self.update()
@@ -167,16 +178,24 @@ class CanvasWidget(QLabel):
                 end_point = self.map_to_original_image(click_pos)
                 if end_point:
                     self.end_point = end_point
-            elif self.annotation_mode == ANNOTATION_MODE.EDIT and self.dragging:
-                # if self.resizing:
-                #     self.resize_rectangle(click_pos)
-                # else:
-                self.move_rectangle(click_pos)
+            
+            elif self.selected_vertex is not None and self.annotation_mode == ANNOTATION_MODE.EDIT:
+                # Resize the selected rectangle
+                new_pos = self.map_to_original_image(click_pos)
+                if new_pos:
+                    self.move_vertex(self.selected_vertex, new_pos)
+            elif self.moving_rectangle and self.annotation_mode == ANNOTATION_MODE.EDIT:
+                # Move the selected rectangle
+                new_pos = self.map_to_original_image(click_pos) # origional image dimension
+                if new_pos:
+                    self.move_rectangle(new_pos)
+                    self.last_mouse_position = new_pos # in repect to origional image 
+
         self.update()
     
     def mouseReleaseEvent(self, event):
-        if self.original_pixmap:
-            if event.button() == Qt.LeftButton and self.start_point and self.annotation_mode == ANNOTATION_MODE.CREATE:
+        if self.original_pixmap and event.button() == Qt.LeftButton:
+            if self.start_point and self.annotation_mode == ANNOTATION_MODE.CREATE:
                 click_pos = event.pos()
                 end_point = self.map_to_original_image(click_pos)
                 if end_point:
@@ -193,13 +212,12 @@ class CanvasWidget(QLabel):
                                 self.object_list_action_slot.emit([self.rectangles[-1]], OBJECT_LIST_ACTION.ADD)
                             except ValueError:
                                 print("Label not found in the label list")
-                    self.start_point = None
-                    self.end_point = None
-                    self.update()  # Trigger a repaint to show the new rectangle
-                else:
-                    self.start_point = None
-                    self.end_point = None
-        self.dragging = False
+            elif self.selected_vertex is not None and self.annotation_mode == ANNOTATION_MODE.EDIT:
+                self.selected_vertex = None
+            elif self.moving_rectangle and self.annotation_mode == ANNOTATION_MODE.EDIT:
+                self.moving_rectangle = False
+        self.start_point = None
+        self.end_point = None
         self.selected_rectangles = None
         self.update()
 
@@ -295,12 +313,12 @@ class CanvasWidget(QLabel):
         selected_rectangles_id = []
 
         # Map the click position to the original image coordinates
-        mapped_pos = self.map_to_original_image(pos)
+        # mapped_pos = self.map_to_original_image(pos)
 
         # Iterate through all rectangles to find the ones containing the point
         for rect in self.rectangles:
             rect_obj = QRect(rect["bbox"][0], rect["bbox"][1], rect["bbox"][2], rect["bbox"][3])
-            if rect_obj.contains(mapped_pos):
+            if rect_obj.contains(pos):
                 selected_rectangles.append(rect)
                 selected_rectangles_id.append(rect["id"])
 
@@ -308,7 +326,7 @@ class CanvasWidget(QLabel):
         if selected_rectangles:
             closest_rect = min(
                 selected_rectangles,
-                key=lambda rect: self.distance_to_center(mapped_pos, rect["bbox"])
+                key=lambda rect: self.distance_to_center(pos, rect["bbox"])
             )
             self.selected_rectangles = closest_rect["id"]
 
@@ -328,6 +346,22 @@ class CanvasWidget(QLabel):
         center_y = bbox[1] + bbox[3] / 2
         return (pos.x() - center_x) ** 2 + (pos.y() - center_y) ** 2
     
+    def find_object_to_edit(self, click_pos):
+        # Iterate from top to bottom (reverse order) to find the topmost object
+        for rectangle in reversed(self.rectangles):
+            rect = rectangle['bbox']
+            vertices = [QPoint(rect[0], rect[1]),  # top-left
+                        QPoint(rect[0] + rect[2], rect[1]),  # top-right
+                        QPoint(rect[0], rect[1] + rect[3]),  # bottom-left
+                        QPoint(rect[0] + rect[2], rect[1] + rect[3])]  # bottom-right
+            mapped_pos = self.map_to_original_image(click_pos)
+            for i, vertex in enumerate(vertices):
+                # scaled_vertex = self.scale_point(vertex)
+                if self.distance(vertex, mapped_pos) <= 20:
+                    return rectangle['id'], i
+        return None, None
+
+
     def get_selected_rectangle(self):
         """
         Get the selected rectangle.
@@ -341,15 +375,52 @@ class CanvasWidget(QLabel):
                 return rect
         return None
     
+    def move_vertex(self, vertex_index, new_pos):
+        if self.selected_rectangles is not None:
+            for rectangle in self.rectangles:
+                if rectangle['id'] == self.selected_rectangles:
+                    rect = rectangle['bbox']
+                    if vertex_index == 0:
+                        delta_w = rect[0] - new_pos.x()
+                        delta_h = rect[1] - new_pos.y()
+                        rect[0] = new_pos.x()
+                        rect[1] = new_pos.y()
+                        rect[2] = rect[2] + delta_w
+                        rect[3] = rect[3] + delta_h
+                    elif vertex_index == 1:
+                        delta_w = new_pos.x() - (rect[0] + rect[2])
+                        delta_h = rect[1] - new_pos.y()
+                        rect[1] = new_pos.y()
+                        rect[2] = rect[2] + delta_w
+                        rect[3] = rect[3] + delta_h
+                        # rect[2] = new_pos.x() - rect[0]
+                        # rect[1] = new_pos.y()
+                    elif vertex_index == 2:
+                        delta_w = rect[0] - new_pos.x()
+                        delta_h = new_pos.y() - (rect[1] + rect[3])
+                        rect[0] = new_pos.x()
+                        rect[2] = rect[2] + delta_w
+                        rect[3] = rect[3] + delta_h
+                    elif vertex_index == 3:
+                        delta_w = new_pos.x() - (rect[0] + rect[2])
+                        delta_h = new_pos.y() - (rect[1] + rect[3])
+                        rect[2] = rect[2] + delta_w
+                        rect[3] = rect[3] + delta_h
+                    break
+
+
+
     def move_rectangle(self, new_pos):
         if self.selected_rectangles is not None:
             rect = self.get_selected_rectangle()
             if rect is not None:
-                dx = new_pos.x() - self.start_drag_point.x()
-                dy = new_pos.y() - self.start_drag_point.y()
-                rect["bbox"][0] += int(dx / self.scale_factor)
-                rect["bbox"][1] += int(dy / self.scale_factor)
-                self.start_drag_point = new_pos
+                dx = new_pos.x() - self.last_mouse_position.x()
+                dy = new_pos.y() - self.last_mouse_position.y()
+                rect["bbox"][0] += int(dx)
+                rect["bbox"][1] += int(dy)
+                # rect["bbox"][0] += int(dx / self.scale_factor)
+                # rect["bbox"][1] += int(dy / self.scale_factor)
+                # self.last_mouse_position = new_pos
     
 
     def select_label_from_label_list(self):
