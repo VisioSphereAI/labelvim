@@ -191,7 +191,10 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
                     
                     # Emit the annotation data to the display
                     self.Display.annotation_data_slot_receiver.emit(self.annotaion_data['annotations'])
-    
+                    self.SaveBtn.setEnabled(True)
+                    self.DeleteAnnotationBtn.setEnabled(True)
+                    self.EditObjectBtn.setEnabled(True)
+                    self.ClearAnnotationBtn.setEnabled(True)
     def __delete_file(self):
         """
         Deletes the currently selected file from the list. Removes the file from 
@@ -353,10 +356,16 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
             
             # Enable the save button
             self.SaveBtn.setEnabled(True)
+            self.DeleteAnnotationBtn.setEnabled(True)
+            self.EditObjectBtn.setEnabled(True)
             self.ClearAnnotationBtn.setEnabled(True)
         else:
             # Display a message dialog if save directory is not selected
             self.msg_dialog("Save Directory Not Selected", "Please select the save directory first.")
+            self.SaveBtn.setEnabled(False)
+            self.DeleteAnnotationBtn.setEnabled(False)
+            self.EditObjectBtn.setEnabled(False)
+            self.ClearAnnotationBtn.setEnabled(False)
 
     def __edit_object(self):
         print("Edit Object")
@@ -439,16 +448,18 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
 
     ## Signal and Slot
     def update_label_list_to_Display(self, label_list):
-        print(f"update_label_list: {label_list}")
+        # print(f"update_label_list: {label_list}")
         self.label_list_manager.update(label_list)
         self.Display.update_label_list_slot_receiver.emit(label_list)
-        self.ObjectLabelListWidget.label_list = label_list # Update the label list in the object list widget
+        self.ObjectLabelListWidget.refresh_list(label_list) # Update the label list in the object list widget
+        # self.ObjectLabelListWidget.label_list = label_list 
     
     def update_label_list_to_Label_Widget(self, label_list):
-        print(f"update_label_list: {label_list}")
+        # print(f"update_label_list: {label_list}")
         self.label_list_manager.update(label_list)
         self.LabelWidget.update_label_list_slot_receiver.emit(label_list)
-        self.ObjectLabelListWidget.label_list = label_list # Update the label list in the object list widget
+        self.ObjectLabelListWidget.refresh_list(label_list) # Update the label list in the object list widget
+        # self.ObjectLabelListWidget.label_list = label_list # Update the label list in the object list widget
     
     def update_data_to_ObjectListWidget(self, data, action):
         print(f"update_data_to_ObjectListWidget: {data}")
