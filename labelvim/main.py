@@ -131,11 +131,13 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.annotaion_data = self.annotaion_manager.annotation
                 self.Display.annotation_data_slot_receiver.emit(self.annotaion_data['annotations'])
                 self.SaveBtn.setEnabled(True)
+                self.EditObjectBtn.setEnabled(True)
                 self.DeleteAnnotationBtn.setEnabled(True)
                 self.ClearAnnotationBtn.setEnabled(True)
             else:
                 self.annotaion_manager = None
                 self.SaveBtn.setEnabled(False)
+                self.EditObjectBtn.setEnabled(False)
                 self.DeleteAnnotationBtn.setEnabled(False)
                 self.ClearAnnotationBtn.setEnabled(False)
 
@@ -272,12 +274,14 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.Display.annotation_data_slot_receiver.emit(self.annotaion_data['annotations'])
                 self.SaveBtn.setEnabled(True)
                 self.DeleteAnnotationBtn.setEnabled(True)
+                self.EditObjectBtn.setEnabled(True)
                 self.ClearAnnotationBtn.setEnabled(True)
             else:
                 # Handle case where no JSON file is found
                 self.annotaion_manager = None
                 self.SaveBtn.setEnabled(False)
                 self.DeleteAnnotationBtn.setEnabled(False)
+                self.EditObjectBtn.setEnabled(False)
                 self.ClearAnnotationBtn.setEnabled(False)
         else:
             print("Invalid index. Cannot load annotation data.")
@@ -311,12 +315,14 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.Display.annotation_data_slot_receiver.emit(self.annotaion_data['annotations'])
                 self.SaveBtn.setEnabled(True)
                 self.DeleteAnnotationBtn.setEnabled(True)
+                self.EditObjectBtn.setEnabled(True)
                 self.ClearAnnotationBtn.setEnabled(True)
             else:
                 # Handle case where no JSON file is found
                 self.annotaion_manager = None
                 self.SaveBtn.setEnabled(False)
                 self.DeleteAnnotationBtn.setEnabled(False)
+                self.EditObjectBtn.setEnabled(False)
                 self.ClearAnnotationBtn.setEnabled(False)
         else:
             print("Invalid index. Cannot load annotation data.")
@@ -356,6 +362,7 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         print("Edit Object")
         self.annotaion_mode = ANNOTATION_MODE.EDIT
         print(f"Annotation Mode: {self.annotaion_mode}")
+        self.Display.btn_action_slot.emit(self.annotaion_mode)
 
     def __delete_annotation(self):
         print("Duplicate Annotation")
