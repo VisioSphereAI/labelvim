@@ -493,15 +493,15 @@ class CustomObjectListWidget(QtWidgets.QListView):
             label_list (list, optional): A list of label names to display. Defaults to an empty list.
         """
         # Check if the label list is a non-empty list
-        if isinstance(category_id, list) and len(category_id) > 0 and isinstance(object_id, list) and len(object_id) > 0:
+        # if isinstance(category_id, list) and len(category_id) > 0 and isinstance(object_id, list) and len(object_id) > 0:
             # Clear the model before updating
-            self.clear_list()
-            # Update the label list and model
-            self.category_id = category_id
-            self.object_id = object_id
-            object_list = [f"{self.label_list[id]}" for id in category_id]
-            # update the model
-            self.model.setStringList(object_list)
+        self.clear_list()
+        # Update the label list and model
+        self.category_id = category_id
+        self.object_id = object_id
+        object_list = [f"{self.label_list[id]}" for id in category_id]
+        # update the model
+        self.model.setStringList(object_list)
         
     def clear_list(self):
         """
@@ -534,6 +534,7 @@ class CustomObjectListWidget(QtWidgets.QListView):
         Args:
             label (str): The label to remove.
         """
+        print(f"Data To Be remoed: {data}")
         category_id = [label["category_id"] for label in data]
         object_id = [label['id'] for label in data]
         self.object = {label['id']: label['category_id'] for label in data}
