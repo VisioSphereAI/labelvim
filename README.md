@@ -1,13 +1,20 @@
-
 <h1 align="center">
-  <img width = "25%" src="resource/screen_shot/Screenshot 2024-08-17 113258.png">
-  <img width = "25%" src="resource/screen_shot/Screenshot 2024-08-17 120032.png">
-   <br/># Object Detection
+  Labelvim
 </h1>
 
+## Object Detection
 <h1 align="center">
-  <img width = "50%" src="resource/screen_shot/segmentation_1.png">
-  <br/>Segmentation
+  <img width = "100%" src="resource/screen_shot/Screenshot 2024-08-17 113258.png">
+  <img width = "100%" src="resource/screen_shot/Screenshot 2024-08-17 120032.png">
+   
+</h1>
+
+## Segmentation
+<h1 align="center">
+  <img width = "25%" src="resource/screen_shot/segmentation_1.png">
+  <img width = "25%" src="resource/screen_shot/segmentation_2.png">
+  <img width = "25%" src="resource/screen_shot/segmentation_3.png">
+  
 </h1>
 
 <h1 align="center">
