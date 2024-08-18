@@ -27,6 +27,8 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         self.annotaion_mode = ANNOTATION_MODE.NONE
         self.annotation_type = ANNOTATION_TYPE.NONE
         self.label_file_name = 'label.yaml'
+        self.save_mask = False
+        self.include_img = False
 
         # Custom Widgets
         self.FileListWidget = CustomListViewWidget(self.centralwidget)
@@ -52,6 +54,21 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ZoomInBtn.clicked.connect(self.__zoom_in)
         self.ZoomOutBtn.clicked.connect(self.__zoom_out)
         self.ZoomFitBtn.clicked.connect(self.__zoom_fit)
+        self.actionQuit.triggered.connect(self.exit_app)
+
+        self.actionOpen.triggered.connect(self.__load_directory)
+        self.actionSave_Folder.triggered.connect(self.__save_directory)
+        self.actionDelete_FIle.triggered.connect(self.__delete_file)
+        self.actionNext.triggered.connect(self.__next)
+        self.actionPrevious.triggered.connect(self.__previous)
+        self.actionSave.triggered.connect(self.__save)
+        self.actionSave_Mask.triggered.connect(self.__save_mask_flag_set)
+        self.actionSave_Mask_include_img.triggered.connect(self.__save_mask_include_img_flag_set)
+
+        self.actionZoom_In.triggered.connect(self.__zoom_in)
+        self.actionZoom_Out.triggered.connect(self.__zoom_out)
+        self.actionFit_Windows.triggered.connect(self.__zoom_fit)
+
         self.show()
         self.__disable_btn_at_start()
         self.show_task_selection_dialog()
@@ -134,12 +151,14 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.EditObjectBtn.setEnabled(True)
                 self.DeleteAnnotationBtn.setEnabled(True)
                 self.ClearAnnotationBtn.setEnabled(True)
+                self.actionSave.setEnabled(True)
             else:
                 self.annotaion_manager = None
                 self.SaveBtn.setEnabled(False)
                 self.EditObjectBtn.setEnabled(False)
                 self.DeleteAnnotationBtn.setEnabled(False)
                 self.ClearAnnotationBtn.setEnabled(False)
+                self.actionSave.setEnabled(False)
 
     def __save_directory(self):
         """
@@ -195,6 +214,7 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.DeleteAnnotationBtn.setEnabled(True)
                     self.EditObjectBtn.setEnabled(True)
                     self.ClearAnnotationBtn.setEnabled(True)
+                    self.actionSave.setEnabled(True)
     def __delete_file(self):
         """
         Deletes the currently selected file from the list. Removes the file from 
@@ -239,6 +259,18 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
             # Update and save the annotation
             self.annotaion_manager.update_annotation(annotation_data)
             self.annotaion_manager.save_annotation()
+            if self.save_mask:
+                import cv2
+                # if self.include_img:
+                image_data = cv2.imread(os.path.join(self.load_dir, self.img_file_list[self.current_index]))
+                image_data = cv2.cvtColor(image_data, cv2.COLOR_BGR2RGB)
+                # else:
+                #     image_data = None
+                if self.annotation_type == ANNOTATION_TYPE.BBOX:
+                    mask_type = 'bbox'
+                else:
+                    mask_type = 'polygon'
+                self.annotaion_manager.save_mask(image_data=image_data, label_map=self.label_list_manager.label_list, include_img=self.include_img, mask_type=mask_type)
             
             # Validate the current index and update lists
             if 0 <= self.current_index < len(self.img_list):
@@ -279,6 +311,7 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.DeleteAnnotationBtn.setEnabled(True)
                 self.EditObjectBtn.setEnabled(True)
                 self.ClearAnnotationBtn.setEnabled(True)
+                self.actionSave.setEnabled(True)
             else:
                 # Handle case where no JSON file is found
                 self.annotaion_manager = None
@@ -286,6 +319,7 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.DeleteAnnotationBtn.setEnabled(False)
                 self.EditObjectBtn.setEnabled(False)
                 self.ClearAnnotationBtn.setEnabled(False)
+                self.actionSave.setEnabled(False)
         else:
             print("Invalid index. Cannot load annotation data.")
 
@@ -320,6 +354,7 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.DeleteAnnotationBtn.setEnabled(True)
                 self.EditObjectBtn.setEnabled(True)
                 self.ClearAnnotationBtn.setEnabled(True)
+                self.actionSave.setEnabled(True)
             else:
                 # Handle case where no JSON file is found
                 self.annotaion_manager = None
@@ -327,6 +362,7 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.DeleteAnnotationBtn.setEnabled(False)
                 self.EditObjectBtn.setEnabled(False)
                 self.ClearAnnotationBtn.setEnabled(False)
+                self.actionSave.setEnabled(False)
         else:
             print("Invalid index. Cannot load annotation data.")
 
@@ -359,6 +395,7 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
             self.DeleteAnnotationBtn.setEnabled(True)
             self.EditObjectBtn.setEnabled(True)
             self.ClearAnnotationBtn.setEnabled(True)
+            self.actionSave.setEnabled(True)
         else:
             # Display a message dialog if save directory is not selected
             self.msg_dialog("Save Directory Not Selected", "Please select the save directory first.")
@@ -366,6 +403,7 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
             self.DeleteAnnotationBtn.setEnabled(False)
             self.EditObjectBtn.setEnabled(False)
             self.ClearAnnotationBtn.setEnabled(False)
+            self.actionSave.setEnabled(False)
 
     def __edit_object(self):
         print("Edit Object")
@@ -424,6 +462,15 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ZoomInBtn.setEnabled(False)
         self.ZoomOutBtn.setEnabled(False)
         self.ZoomFitBtn.setEnabled(False)
+        # action menu disable
+        self.actionNext.setEnabled(False)
+        self.actionPrevious.setEnabled(False)
+        self.actionDelete_FIle.setEnabled(False)
+        self.actionSave.setEnabled(False)
+        self.actionZoom_In.setEnabled(False)
+        self.actionZoom_Out.setEnabled(False)
+        self.actionFit_Windows.setEnabled(False)
+
     
     def __enable_btn_after_load(self):
         """
@@ -436,6 +483,14 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ZoomInBtn.setEnabled(True)
         self.ZoomOutBtn.setEnabled(True)
         self.ZoomFitBtn.setEnabled(True)
+        # action menu enable
+        self.actionNext.setEnabled(True)
+        self.actionPrevious.setEnabled(True)
+        self.actionDelete_FIle.setEnabled(True)
+        self.actionZoom_In.setEnabled(True)
+        self.actionZoom_Out.setEnabled(True)
+        self.actionFit_Windows.setEnabled(True)
+        # self.actionSave.setEnabled(True)
     
     def msg_dialog(self, title, msg):
         msg_box = QtWidgets.QMessageBox()
@@ -465,6 +520,31 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         # print(f"update_data_to_ObjectListWidget: {data}")
         # print(f"update_data_to_ObjectListWidget: {action}")
         self.ObjectLabelListWidget.object_list_slot_receiver.emit(data, action)
+    
+    def __save_mask_flag_set(self):
+        self.save_mask = not self.save_mask
+        print(f"Save Mask: {self.save_mask}")
+        self.__change_icon_save_mask()
+    
+    def __save_mask_include_img_flag_set(self):
+        self.include_img = not self.include_img
+        print(f"Save Mask Include Image: {self.include_img}")
+        self.__change_icon_save_mask_include_img()
+    
+    def __change_icon_save_mask(self):
+        if self.save_mask:
+            self.actionSave_Mask.setIconVisibleInMenu(True)
+        else:
+            self.actionSave_Mask.setIconVisibleInMenu(False)
+    
+    def __change_icon_save_mask_include_img(self):
+        if self.include_img:
+            self.actionSave_Mask_include_img.setIconVisibleInMenu(True)
+        else:
+            self.actionSave_Mask_include_img.setIconVisibleInMenu(False)
+    
+    def exit_app(self):
+        self.close()
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

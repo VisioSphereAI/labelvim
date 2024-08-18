@@ -1,0 +1,7 @@
+# enable delete key press btn to the selected vertex & object
+# validate both bounding box and segmentation annotation
+
+# enable export btn to specific format (e.g. COCO, VOC, YOLO etc.) with following options segmentations, bounding box, keypoints, etc. as well as mask(only for vizualization)
+# Enable mask storage for vizualization
+# color selection in menu bar
+# remove extra menu bar
