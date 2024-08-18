@@ -408,8 +408,6 @@ class CanvasWidget(QLabel):
                         rect[3] = rect[3] + delta_h
                     break
 
-
-
     def move_rectangle(self, new_pos):
         if self.selected_rectangles is not None:
             rect = self.get_selected_rectangle()
@@ -456,7 +454,8 @@ class CanvasWidget(QLabel):
             category_id = anno['category_id']
             id = anno['id']
             bbox = anno['bbox']
-            self.rectangles.append({"category_id": category_id, "bbox": bbox, "id": id})
+            polygon = anno['segmentation']
+            self.rectangles.append({"category_id": category_id, "bbox": bbox, "id": id, "polygon": polygon})
         if len(self.rectangles) > 0:
             self.object_list_action_slot.emit([self.rectangles], OBJECT_LIST_ACTION.UPDATE)
         print(f"Rectangles: {len(self.rectangles)}")
@@ -476,7 +475,7 @@ class CanvasWidget(QLabel):
             id = rect['id']
             x, y, w, h = rect['bbox'][0], rect['bbox'][1], rect['bbox'][2], rect['bbox'][3]
             area = w * h
-            segmentation = rect['polygon']
+            segmentation = [[]]
             iscrowd = 0
             annotations.append({
                 "id": id,
