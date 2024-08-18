@@ -11,10 +11,13 @@
 
 ## Segmentation
 <h1 align="center">
-  <img width = "25%" src="resource/screen_shot/segmentation_1.png">
-  <img width = "25%" src="resource/screen_shot/segmentation_2.png">
-  <img width = "25%" src="resource/screen_shot/segmentation_3.png">
-  
+  <img width = "33%" src="resource/screen_shot/segmentation_1.png">
+  <img width = "33%" src="resource/screen_shot/segmentation_2.png">
+  <img width = "33%" src="resource/screen_shot/segmentation_3.png">
+  </br>
+  <img width = "33%" src="resource/generated_mask/137_mask.jpg">
+  <img width = "33%" src="resource/generated_mask/140_mask.jpg">
+  <img width = "33%" src="resource/generated_mask/177_mask.jpg">
 </h1>
 
 <h1 align="center">
