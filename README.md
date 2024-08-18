@@ -1,9 +1,18 @@
+
 <h1 align="center">
-  <img width = "100%" src="resource/screen_shot/Screenshot 2024-08-17 113258.png">
-  <img width = "100%" src="resource/screen_shot/Screenshot 2024-08-17 120032.png">
-   <br/>labelvim
+  <img width = "25%" src="resource/screen_shot/Screenshot 2024-08-17 113258.png">
+  <img width = "25%" src="resource/screen_shot/Screenshot 2024-08-17 120032.png">
+   <br/># Object Detection
 </h1>
 
+<h1 align="center">
+  <img width = "50%" src="resource/screen_shot/segmentation_1.png">
+  <br/>Segmentation
+</h1>
+
+<h1 align="center">
+  Labelvim
+</h1>
 <h4 align="center">
   A data annotation tool to Annotate Videos and Image
 </h4>
