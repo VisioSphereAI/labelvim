@@ -1,19 +1,16 @@
+import sys
+import os
 from PyQt5 import QtWidgets
 from layout import Ui_MainWindow
-from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtCore import QStringListModel
-from labelvim.utils.utils import get_image_list
-from labelvim.widgets.list_widgets import CustomListViewWidget, CustomLabelWidget, CustomObjectListWidget
-import sys
-from PyQt5.QtCore import pyqtSignal
-from labelvim.utils.config import ANNOTATION_TYPE
-from labelvim.widgets.task_selection import TaskSelectionDialog
-from labelvim.widgets.canvas_widget import CanvasWidget
-from labelvim.utils.config import ANNOTATION_TYPE, ANNOTATION_MODE, OBJECT_LIST_ACTION
-from labelvim.utils.utils import return_mattching
-import os
+from PyQt5.QtWidgets import QFileDialog, QApplication
+from labelvim.utils.utils import get_image_list, return_mattching
 from labelvim.utils.annotaion_manager import AnnotationManager
 from labelvim.utils.lablelist_reader import label_list_reader as label_list_manager
+from labelvim.utils.config import ANNOTATION_TYPE, ANNOTATION_MODE, OBJECT_LIST_ACTION
+from labelvim.widgets.task_selection import TaskSelectionDialog
+from labelvim.widgets.canvas_widget import CanvasWidget
+from labelvim.widgets.list_widgets import CustomListViewWidget, CustomLabelWidget, CustomObjectListWidget
+
 
 class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -28,7 +25,7 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         self.json_data = {}
         self.current_index = 0
         self.annotaion_mode = ANNOTATION_MODE.NONE
-        self.task_mode = 'Object Detection'
+        self.annotation_type = ANNOTATION_TYPE.NONE
         self.label_file_name = 'label.yaml'
 
         # Custom Widgets
@@ -59,7 +56,7 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         self.__disable_btn_at_start()
         self.show_task_selection_dialog()
         
-        self.LabelWidget.update_annotation_type(self.task_mode)
+        # self.LabelWidget.update_annotation_type(self.annotation_type)
 
         # Connect signals and slots
         self.FileListWidget.notify_selected_item.connect(self.__load_image)
@@ -82,8 +79,11 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         dialog = TaskSelectionDialog(self)
         if dialog.exec_():
-            self.task_mode = dialog.selected_task()
-            print(f"Selected Task: {self.task_mode}")
+            annotation_type = dialog.selected_task()
+            if annotation_type != ANNOTATION_TYPE.NONE:
+                self.annotation_type = annotation_type
+                self.LabelWidget.update_annotation_type(self.annotation_type)
+                self.Display.update_annotation_type(self.annotation_type)
 
 
     def __load_directory(self):

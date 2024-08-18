@@ -6,7 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5 import QtWidgets, QtCore
 from labelvim.widgets.label_pupop import LabelPopup
-from labelvim.utils.config import ANNOTATION_MODE, OBJECT_LIST_ACTION
+from labelvim.utils.config import ANNOTATION_MODE, OBJECT_LIST_ACTION, ANNOTATION_TYPE
 from enum import Enum
 
 class CanvasWidget(QLabel):
@@ -60,11 +60,18 @@ class CanvasWidget(QLabel):
         self.scale_factor = 1.0
         # self.__reset_scale_factor()
         self.annotation_mode = ANNOTATION_MODE.NONE
+        self.annotation_type = ANNOTATION_TYPE.NONE
         self.scale_factor_w, self.scale_factor_h = 1, 1
         self.zoom_in_scale_factor = 1.25
         self.zoom_out_scale_factor = 0.8
         self.max_scale_factor = 6
         self.point_click_radious = 5 # The radious of the point click
+
+    def update_annotation_type(self, annotation_type):
+        print(f"Annotation Type: {annotation_type}")
+        print(f"OLD Annotation Type: {self.annotation_type}")
+        self.annotation_type = annotation_type
+        print(f"UPDATED Annotation Type: {self.annotation_type}")
 
     def load_image(self, file_name):
         self.clear_annotation()

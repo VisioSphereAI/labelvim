@@ -234,7 +234,7 @@ class CustomLabelWidget(QtWidgets.QListView):
         self.delegate = CustomDelegate(self)
         self.setItemDelegate(self.delegate)
         # Set the annotation type to None
-        self.annotation_type = "Rectangle"
+        self.annotation_type = ANNOTATION_TYPE.NONE
         # Connect the signals
         self.update_label_list_slot_receiver.connect(self.__update_list) # Connect the signal to update the label list
         self.model.dataChanged.connect(self.on_data_changed)  # Connect the dataChanged signal
@@ -298,11 +298,12 @@ class CustomLabelWidget(QtWidgets.QListView):
             annotation_type (str): The new annotation type to use.
         """
         # Set the annotation type based on the provided value
-        self.annotation_type = {
-            "Object Detection": "Rectangle",
-            "Segmentation": "Polygon"
-        }.get(annotation_type, "None")
+        # self.annotation_type = {
+        #     "Object Detection": ANNOTATION_TYPE.BBOX,
+        #     "Segmentation": ANNOTATION_TYPE.POLYGON
+        # }.get(annotation_type, ANNOTATION_TYPE.NONE)
         # Print the annotation type
+        self.annotation_type = annotation_type
         print(f"Annotation Type: {self.annotation_type}")
     
     def mouseDoubleClickEvent(self, event):
