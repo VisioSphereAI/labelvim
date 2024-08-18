@@ -462,8 +462,8 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.ObjectLabelListWidget.label_list = label_list # Update the label list in the object list widget
     
     def update_data_to_ObjectListWidget(self, data, action):
-        print(f"update_data_to_ObjectListWidget: {data}")
-        print(f"update_data_to_ObjectListWidget: {action}")
+        # print(f"update_data_to_ObjectListWidget: {data}")
+        # print(f"update_data_to_ObjectListWidget: {action}")
         self.ObjectLabelListWidget.object_list_slot_receiver.emit(data, action)
 
 if __name__ == '__main__':

@@ -40,16 +40,21 @@ class CanvasWidget(QLabel):
         
         self.start_point = None
         self.end_point = None
+        self.polygon_points = []
+        self.polygon_move_point = None
         self.rectangles = []  # List to store drawn rectangles
         self.original_pixmap = None
         self.current_pixmap = None
         self.brush_color = QColor(0, 0, 255, 50)
-        self.pen_color = QColor(0, 0, 255)
+        self.polygon_brush_color = QColor(255, 0, 0, 50)
+        self.pen_color = QColor(0, 255, 255)
         self.title_pen_color = QColor(0, 255, 255)
-        self.selected_rectangle_brush_color = QColor(255, 0, 0, 50)
-        self.selected_rectangles = None  # List to store selected rectangles
+        self.selected_rectangle_brush_color = QColor(255, 0, 255, 50)
+        self.selected_polygon_brush_color = QColor(255, 255, 0, 50)
+        self.selected_object = None  # List to store selected rectangles
         self.selected_vertex = None
-        self.moving_rectangle = False
+        self.line_segment = None
+        self.moving_object = False
         self.last_mouse_position = QPoint()  # Store the last mouse position
         # self.pixmap = None  # To store the loaded pixmap
         self.label_list = []
@@ -75,7 +80,7 @@ class CanvasWidget(QLabel):
 
     def load_image(self, file_name):
         self.clear_annotation()
-        self.selected_rectangles = None
+        self.selected_object = None
         # emit signal to clear the object list
         self.object_list_action_slot.emit([None], OBJECT_LIST_ACTION.CLEAR)
         self.annotation_mode = ANNOTATION_MODE.NONE
@@ -127,6 +132,10 @@ class CanvasWidget(QLabel):
 
     def clear_annotation(self):
         """Clear the displayed image from the widget."""
+        self.start_point = None
+        self.end_point = None
+        self.polygon_points.clear()
+        self.polygon_move_point = None
         self.rectangles.clear()
         self.update()
     
@@ -154,79 +163,152 @@ class CanvasWidget(QLabel):
         if self.original_pixmap:
             click_pos = event.pos()
             if event.button() == Qt.LeftButton:
-                if self.annotation_mode == ANNOTATION_MODE.CREATE:
-                    start_point = self.map_to_original_image(click_pos)
-                    if start_point:
-                        self.start_point = start_point
-                if self.annotation_mode == ANNOTATION_MODE.EDIT:
-                    self.selected_rectangles, self.selected_vertex = self.find_object_to_edit(click_pos)
-                    print(f"Selected Rectangle: {self.selected_rectangles}, Selected Vertex: {self.selected_vertex}")
-                    if self.selected_vertex is None and self.selected_rectangles is None:
-                        # Start moving the rectangle if no vertex is selected
-                        self.moving_rectangle = True
-                        self.last_mouse_position = self.map_to_original_image(click_pos)
-                        if self.last_mouse_position is None:
-                            self.moving_rectangle = False
-                        else:
-                            self.select_rectangle(self.last_mouse_position)
-                        print(f"Selected Rectangle: {self.selected_rectangles}")
-                    # self.select_rectangle(click_pos)
-                    # if self.selected_rectangles is not None:
-                    #     self.start_drag_point = click_pos
-                    #     self.dragging = True
-                    # self.resizing = self.is_resizing(click_pos)
+                if self.annotation_type == ANNOTATION_TYPE.BBOX:
+                    if self.annotation_mode == ANNOTATION_MODE.CREATE:
+                        start_point = self.map_to_original_image(click_pos)
+                        if start_point:
+                            self.start_point = start_point
+                    if self.annotation_mode == ANNOTATION_MODE.EDIT:
+                        self.selected_object, self.selected_vertex = self.find_object_to_edit(click_pos)
+                        print(f"Selected Rectangle: {self.selected_object}, Selected Vertex: {self.selected_vertex}")
+                        if self.selected_vertex is None and self.selected_object is None:
+                            # Start moving the rectangle if no vertex is selected
+                            self.moving_object = True
+                            self.last_mouse_position = self.map_to_original_image(click_pos)
+                            if self.last_mouse_position is None:
+                                self.moving_object = False
+                            else:
+                                self.select_rectangle(self.last_mouse_position)
+                            print(f"Selected Rectangle: {self.selected_object}")
+                elif self.annotation_type == ANNOTATION_TYPE.POLYGON:
+                    new_map = self.map_to_original_image(click_pos)
+                    self.polygon_move_point = None
+                    if self.annotation_mode == ANNOTATION_MODE.CREATE:
+                        if len(self.polygon_points) == 0:
+                            # print("First Point")
+                            self.polygon_points.append(new_map)
+                        elif len(self.polygon_points) == 1:
+                            if self.distance(self.polygon_points[0], new_map) > 10:
+                                # print("Second Point")
+                                self.polygon_points.append(new_map)
+                        elif len(self.polygon_points) >=2:
+                            # print("More than 2 points")
+                            if self.distance(self.polygon_points[0], new_map) < 10:
+                                # print("Last Point")
+                                self.polygon_move_point = None
+                                self.update_rectangle(poly = self.polygon_points)
+                                self.polygon_points.clear()
+                            else:
+                                # print("More than 2 points")
+                                self.polygon_points.append(new_map)
+                    elif self.annotation_mode == ANNOTATION_MODE.EDIT:
+                        self.selected_object, self.selected_vertex, self.line_segment = self.find_polygon_to_edit(new_map)
+                        print(f"Selected Rectangle: {self.selected_object}, Selected Vertex: {self.selected_vertex}, Line Segment: {self.line_segment}")
 
+                        if self.selected_vertex is None and self.selected_object is None and self.line_segment is None:
+                            print("Moving Polygon")
+                            print(f"Selected Rectangle: {self.selected_object}")
+                            self.moving_object = True
+                            self.last_mouse_position = new_map
+                            print(f"Last Mouse Position: {self.last_mouse_position}")
+                            if self.last_mouse_position is None:
+                                self.moving_object = False
+                            else:
+                                self.select_polygon(new_map)
+                            print(f"Selected Rectangle: {self.selected_object}")
+                        # self.selected_object = self.select_polygon(new_map)
+                        # if self.selected_object is not None:
+                        #     self.polygon_move_point = new_map
         self.update()
 
     def mouseMoveEvent(self, event):
         if self.original_pixmap:
             click_pos = event.pos()
-            if self.start_point and self.annotation_mode == ANNOTATION_MODE.CREATE:
-                end_point = self.map_to_original_image(click_pos)
-                if end_point:
-                    self.end_point = end_point
-            
-            elif self.selected_vertex is not None and self.annotation_mode == ANNOTATION_MODE.EDIT:
-                # Resize the selected rectangle
-                new_pos = self.map_to_original_image(click_pos)
-                if new_pos:
-                    self.move_vertex(self.selected_vertex, new_pos)
-            elif self.moving_rectangle and self.annotation_mode == ANNOTATION_MODE.EDIT:
-                # Move the selected rectangle
-                new_pos = self.map_to_original_image(click_pos) # origional image dimension
-                if new_pos:
-                    self.move_rectangle(new_pos)
-                    self.last_mouse_position = new_pos # in repect to origional image 
-
+            if self.annotation_type == ANNOTATION_TYPE.BBOX:
+                if self.start_point and self.annotation_mode == ANNOTATION_MODE.CREATE:
+                    end_point = self.map_to_original_image(click_pos)
+                    if end_point:
+                        self.end_point = end_point
+                
+                elif self.selected_vertex is not None and self.annotation_mode == ANNOTATION_MODE.EDIT:
+                    # Resize the selected rectangle
+                    new_pos = self.map_to_original_image(click_pos)
+                    if new_pos:
+                        self.move_vertex(self.selected_vertex, new_pos)
+                elif self.moving_object and self.annotation_mode == ANNOTATION_MODE.EDIT:
+                    # Move the selected rectangle
+                    new_pos = self.map_to_original_image(click_pos) # origional image dimension
+                    if new_pos:
+                        self.move_rectangle(new_pos)
+                        self.last_mouse_position = new_pos # in repect to origional image dimension
+            elif self.annotation_type == ANNOTATION_TYPE.POLYGON:
+                new_map = self.map_to_original_image(click_pos)
+                if self.annotation_mode == ANNOTATION_MODE.EDIT:
+                    if self.selected_object is not None and self.selected_vertex is not None:
+                        # new_map = self.map_to_original_image(click_pos)
+                        if new_map:
+                            self.move_polygon_vertex(new_map)
+                    elif self.selected_object is not None and self.line_segment is not None:
+                        new_map = self.map_to_original_image(click_pos)
+                        self.last_mouse_position = new_map
+                        if new_map:
+                            self.add_point_to_polygon(new_map)
+                            self.selected_vertex = self.line_segment[1]
+                            self.line_segment = None
+                    elif self.moving_object and self.selected_object is not None:
+                        # print("Moving Polygon")
+                        new_map = self.map_to_original_image(click_pos)
+                        if new_map:
+                            self.move_polygon(new_map)
+                            self.last_mouse_position = new_map
         self.update()
     
     def mouseReleaseEvent(self, event):
         if self.original_pixmap and event.button() == Qt.LeftButton:
-            if self.start_point and self.annotation_mode == ANNOTATION_MODE.CREATE:
-                click_pos = event.pos()
-                end_point = self.map_to_original_image(click_pos)
-                if end_point:
-                    self.end_point = end_point
-                    rect = QRect(self.start_point, self.end_point).normalized()
-                    if self.distance(self.start_point, self.end_point) > 20:
-                        label_selected = self.select_label_from_label_list()
-                        print(f"Selected Label: {label_selected}")
-                        if label_selected:
-                            try:
-                                index = self.label_list.index(label_selected)
-                                self.rectangles.append({"category_id": index, "bbox": [rect.x(), rect.y(), rect.width(), rect.height()], "id": len(self.rectangles)})
-                                # emit signal to add object to the object list
-                                self.object_list_action_slot.emit([self.rectangles[-1]], OBJECT_LIST_ACTION.ADD)
-                            except ValueError:
-                                print("Label not found in the label list")
-            elif self.selected_vertex is not None and self.annotation_mode == ANNOTATION_MODE.EDIT:
-                self.selected_vertex = None
-            elif self.moving_rectangle and self.annotation_mode == ANNOTATION_MODE.EDIT:
-                self.moving_rectangle = False
-        self.start_point = None
-        self.end_point = None
-        self.selected_rectangles = None
+            click_pos = event.pos()
+            if self.annotation_type == ANNOTATION_TYPE.BBOX:
+                if self.start_point and self.annotation_mode == ANNOTATION_MODE.CREATE:
+                    end_point = self.map_to_original_image(click_pos)
+                    if end_point:
+                        self.end_point = end_point
+                        rect = QRect(self.start_point, self.end_point).normalized()
+                        if self.distance(self.start_point, self.end_point) > 20:
+                            self.update_rectangle(bbox = rect)
+                elif self.selected_vertex is not None and self.annotation_mode == ANNOTATION_MODE.EDIT:
+                    self.selected_vertex = None
+                elif self.moving_object and self.annotation_mode == ANNOTATION_MODE.EDIT:
+                    self.moving_object = False
+                self.start_point = None
+                self.end_point = None
+            elif self.annotation_type == ANNOTATION_TYPE.POLYGON:
+                if self.selected_vertex is not None and self.annotation_mode == ANNOTATION_MODE.EDIT:
+                    self.selected_vertex = None
+                elif self.moving_object and self.annotation_mode == ANNOTATION_MODE.EDIT:
+                    self.moving_object = False
+                self.last_mouse_position = None
+        self.selected_object = None
         self.update()
+    
+    def keyPressEvent(self, event):
+        # Capture the key press event and display the key information
+        key = event.key()
+
+        if self.annotation_type == ANNOTATION_TYPE.POLYGON:
+            print("Delete Key Pressed")
+            if key == Qt.Key_Delete:
+                
+                if self.selected_object is not None and self.selected_vertex is None:
+                    self.rectangles.pop(self.selected_object)
+                    # emit signal to remove object from the object list
+                    self.object_list_action_slot.emit([self.selected_object], OBJECT_LIST_ACTION.REMOVE)
+                    self.selected_object = None
+                elif self.selected_object is not None and self.selected_vertex is not None:
+                    self.remove_point_from_polygon(self.selected_vertex)
+                    self.selected_vertex = None
+
+        # Optional: If you want to handle the key press and not propagate it further, you can skip calling the base class implementation.
+        # If you want the key press to be handled by the parent class as well, call the superclass's method:
+        super().keyPressEvent(event)
 
     def paintEvent(self, event):
         super().paintEvent(event)
@@ -238,38 +320,103 @@ class CanvasWidget(QLabel):
             # print(f"offset_x: {offset_x}, offset_y: {offset_y}")
             painter.setPen(QPen(self.pen_color, 2, Qt.SolidLine))
             painter.setBrush(QBrush(self.brush_color))
-            if self.start_point and self.end_point:
-                # painter.setPen(QPen(QColor(0, 0, 255), 2, Qt.SolidLine))
-                
-                start_point = QPoint(offset_x+int(self.start_point.x() * self.scale_factor), offset_y+int(self.start_point.y() * self.scale_factor))
-                end_point = QPoint(offset_x+int(self.end_point.x() * self.scale_factor), offset_y+int(self.end_point.y() * self.scale_factor))
-                rect = QRect(start_point, end_point).normalized()
-                painter.drawEllipse(rect.topLeft(), 5, 5)
-                painter.drawEllipse(rect.topRight(), 5, 5)
-                painter.drawEllipse(rect.bottomLeft(), 5, 5)
-                painter.drawEllipse(rect.bottomRight(), 5, 5)
-                painter.drawRect(rect)
-            for rectangle in self.rectangles:
-                rect, index = rectangle['bbox'], rectangle["category_id"]
-                painter.setPen(QPen(self.pen_color, 2, Qt.SolidLine))
-                painter.setBrush(QBrush(self.brush_color))
-                if self.selected_rectangles is not None and self.selected_rectangles == rectangle["id"]:
-                    painter.setBrush(QBrush(self.selected_rectangle_brush_color))
-                rect = QRect(offset_x+int(rect[0] * self.scale_factor), offset_y+int(rect[1] * self.scale_factor), int(rect[2] * self.scale_factor), int(rect[3] * self.scale_factor))
-                text_label = self.label_list[index]
-                painter.drawEllipse(rect.topLeft(), 5, 5)
-                painter.drawEllipse(rect.topRight(), 5, 5)
-                painter.drawEllipse(rect.bottomLeft(), 5, 5)
-                painter.drawEllipse(rect.bottomRight(), 5, 5)
-                painter.drawRect(rect)
-                painter.setPen(QPen(self.title_pen_color, 2, Qt.SolidLine))
-                painter.setBrush(QBrush(QColor(255, 255, 255, 75)))
-                painter.drawRect(rect.topLeft().x(), rect.topLeft().y() - 20, rect.width(), 20)
-                painter.setPen(QPen(QColor(0,0,0), 2, Qt.SolidLine))
-                painter.drawText(rect.topLeft().x(), rect.topLeft().y() - 5, text_label)
+
+            if self.annotation_type == ANNOTATION_TYPE.BBOX:
+                if self.start_point and self.end_point:
+                    # painter.setPen(QPen(QColor(0, 0, 255), 2, Qt.SolidLine))
+                    
+                    start_point = QPoint(offset_x+int(self.start_point.x() * self.scale_factor), offset_y+int(self.start_point.y() * self.scale_factor))
+                    end_point = QPoint(offset_x+int(self.end_point.x() * self.scale_factor), offset_y+int(self.end_point.y() * self.scale_factor))
+                    rect = QRect(start_point, end_point).normalized()
+                    painter.drawEllipse(rect.topLeft(), 5, 5)
+                    painter.drawEllipse(rect.topRight(), 5, 5)
+                    painter.drawEllipse(rect.bottomLeft(), 5, 5)
+                    painter.drawEllipse(rect.bottomRight(), 5, 5)
+                    painter.drawRect(rect)
+                for rectangle in self.rectangles:
+                    rect, index = rectangle['bbox'], rectangle["category_id"]
+                    painter.setPen(QPen(self.pen_color, 2, Qt.SolidLine))
+                    painter.setBrush(QBrush(self.brush_color))
+                    if self.selected_object is not None and self.selected_object == rectangle["id"]:
+                        painter.setBrush(QBrush(self.selected_rectangle_brush_color))
+                    rect = QRect(offset_x+int(rect[0] * self.scale_factor), offset_y+int(rect[1] * self.scale_factor), int(rect[2] * self.scale_factor), int(rect[3] * self.scale_factor))
+                    text_label = self.label_list[index]
+                    painter.drawEllipse(rect.topLeft(), 5, 5)
+                    painter.drawEllipse(rect.topRight(), 5, 5)
+                    painter.drawEllipse(rect.bottomLeft(), 5, 5)
+                    painter.drawEllipse(rect.bottomRight(), 5, 5)
+                    painter.drawRect(rect)
+                    painter.setPen(QPen(self.title_pen_color, 2, Qt.SolidLine))
+                    painter.setBrush(QBrush(QColor(255, 255, 255, 75)))
+                    painter.drawRect(rect.topLeft().x(), rect.topLeft().y() - 20, rect.width(), 20)
+                    painter.setPen(QPen(QColor(0,0,0), 2, Qt.SolidLine))
+                    painter.drawText(rect.topLeft().x(), rect.topLeft().y() - 5, text_label)
+            elif self.annotation_type == ANNOTATION_TYPE.POLYGON:
+                if self.polygon_points:
+                    polygon_points = [QPoint(offset_x+int(point.x() * self.scale_factor), offset_y+int(point.y() * self.scale_factor)) for point in self.polygon_points]
+                    polgon = QPolygon(polygon_points)
+                    painter.setPen(QPen(self.pen_color, 2, Qt.SolidLine))
+                    painter.setBrush(QBrush(self.polygon_brush_color))
+                    painter.drawPolygon(polgon)
+                    for point in polygon_points:
+                        painter.drawEllipse(point, 5, 5)
+                for rectangle in self.rectangles:
+                    rect, index, polgon = rectangle['bbox'], rectangle["category_id"], rectangle["polygon"]
+                    # print(f"Polygon: {polgon}")
+                    painter.setPen(QPen(self.pen_color, 2, Qt.SolidLine))
+                    painter.setBrush(QBrush(self.brush_color))
+                    if self.selected_object is not None and self.selected_object == rectangle["id"]:
+                        painter.setBrush(QBrush(self.selected_rectangle_brush_color))
+                    rect = QRect(offset_x+int(rect[0] * self.scale_factor), offset_y+int(rect[1] * self.scale_factor), int(rect[2] * self.scale_factor), int(rect[3] * self.scale_factor))
+                    painter.drawRect(rect)
+                    painter.setPen(QPen(self.pen_color, 2, Qt.SolidLine))
+                    painter.setBrush(QBrush(self.polygon_brush_color))
+                    if self.selected_object is not None and self.selected_object == rectangle["id"]:
+                        painter.setBrush(QBrush(self.selected_polygon_brush_color))
+                    painter.drawPolygon(QPolygon([QPoint(offset_x+int(point.x() * self.scale_factor), offset_y+int(point.y() * self.scale_factor)) for point in polgon]))
+                    for point in polgon:
+                        painter.drawEllipse(QPoint(offset_x+int(point.x() * self.scale_factor), offset_y+int(point.y() * self.scale_factor)), 5, 5)
+                    text_label = self.label_list[index]
+                    painter.setPen(QPen(self.title_pen_color, 2, Qt.SolidLine))
+                    painter.setBrush(QBrush(QColor(255, 255, 255, 75)))
+                    painter.drawRect(rect.topLeft().x(), rect.topLeft().y() - 20, rect.width(), 20)
+                    painter.setPen(QPen(QColor(0,0,0), 2, Qt.SolidLine))
+                    painter.drawText(rect.topLeft().x(), rect.topLeft().y() - 5, text_label)
+                    
         self.update()
     
-    def distance(self, p1, p2):
+    def update_rectangle(self, **kwargs): # need to rename later
+        bbox = kwargs.get('bbox')
+        poly = kwargs.get('poly')
+        if bbox:
+            label_selected = self.select_label_from_label_list()
+            print(f"Selected Label: {label_selected}")
+            if label_selected:
+                try:
+                    index = self.label_list.index(label_selected)
+                    self.rectangles.append({"category_id": index, "bbox": [bbox.x(), bbox.y(), bbox.width(), bbox.height()], "id": len(self.rectangles), "polygon": []})
+                    # emit signal to add object to the object list
+                    self.object_list_action_slot.emit([self.rectangles[-1]], OBJECT_LIST_ACTION.ADD)
+                except ValueError:
+                    print("Label not found in the label list")
+        if poly:
+            label_selected = self.select_label_from_label_list()
+            print(f"Selected Label: {label_selected}")
+            if label_selected:
+                try:
+                    index = self.label_list.index(label_selected)
+                    polygon = QPolygon(poly)
+                    # print(f"Polygon: {poly}")
+                    # print(f"Polygon: {polygon}")
+                    bbox = polygon.boundingRect()
+                    # print(f"Bounding Box: {bbox}")
+                    self.rectangles.append({"category_id": index, "bbox": [bbox.x(), bbox.y(), bbox.width(), bbox.height()], "id": len(self.rectangles), "polygon": poly.copy()})
+                    # emit signal to add object to the object list
+                    self.object_list_action_slot.emit([self.rectangles[-1]], OBJECT_LIST_ACTION.ADD)
+                except ValueError:
+                    print("Label not found in the label list")
+    @staticmethod
+    def distance(p1, p2):
         """
         Calculate the distance between two points.
         
@@ -285,6 +432,16 @@ class CanvasWidget(QLabel):
         """
         return ((p1.x() - p2.x())**2 + (p1.y() - p2.y())**2)**0.5
     
+    @staticmethod
+    def distance_to_line_segment(p, v, w):
+        """Calculate the distance from point p to the line segment vw."""
+        l2 = CanvasWidget.distance(v, w) ** 2
+        if l2 == 0.0:
+            return CanvasWidget.distance(p, v)
+        t = max(0, min(1, ((p.x() - v.x()) * (w.x() - v.x()) + (p.y() - v.y()) * (w.y() - v.y())) / l2))
+        projection = QPoint(int(v.x() + t * (w.x() - v.x())), int(v.y() + t * (w.y() - v.y())))
+        return CanvasWidget.distance(p, projection)
+
     def map_to_original_image(self, pos):
         """
         Map the position on the displayed image to the original image.
@@ -335,10 +492,10 @@ class CanvasWidget(QLabel):
                 selected_rectangles,
                 key=lambda rect: self.distance_to_center(pos, rect["bbox"])
             )
-            self.selected_rectangles = closest_rect["id"]
+            self.selected_object = closest_rect["id"]
 
-
-    def distance_to_center(self, pos, bbox):
+    @staticmethod
+    def distance_to_center(pos, bbox):
         """
         Calculate the distance from a point to the center of a bounding box.
         
@@ -369,7 +526,7 @@ class CanvasWidget(QLabel):
         return None, None
 
 
-    def get_selected_rectangle(self):
+    def get_selected_object(self):
         """
         Get the selected rectangle.
         
@@ -378,14 +535,14 @@ class CanvasWidget(QLabel):
             dict: The selected rectangle.
         """
         for rect in self.rectangles:
-            if rect["id"] == self.selected_rectangles:
+            if rect["id"] == self.selected_object:
                 return rect
         return None
     
     def move_vertex(self, vertex_index, new_pos):
-        if self.selected_rectangles is not None:
+        if self.selected_object is not None:
             for rectangle in self.rectangles:
-                if rectangle['id'] == self.selected_rectangles:
+                if rectangle['id'] == self.selected_object:
                     rect = rectangle['bbox']
                     if vertex_index == 0:
                         delta_w = rect[0] - new_pos.x()
@@ -416,19 +573,102 @@ class CanvasWidget(QLabel):
                     break
 
 
-
     def move_rectangle(self, new_pos):
-        if self.selected_rectangles is not None:
-            rect = self.get_selected_rectangle()
+        if self.selected_object is not None:
+            rect = self.get_selected_object()
             if rect is not None:
                 dx = new_pos.x() - self.last_mouse_position.x()
                 dy = new_pos.y() - self.last_mouse_position.y()
                 rect["bbox"][0] += int(dx)
                 rect["bbox"][1] += int(dy)
-                # rect["bbox"][0] += int(dx / self.scale_factor)
-                # rect["bbox"][1] += int(dy / self.scale_factor)
-                # self.last_mouse_position = new_pos
+                
     
+    
+    def select_polygon(self, pos):
+        selected_polygon = []
+        selected_polygon_id = []
+        for polygon in self.rectangles:
+            poly = polygon['polygon']
+            # polygon_points = [QPoint(point.x(), point.y()) for point in poly]
+            # polygon_points = [QPoint(point[0] * self.scale_factor, point[1] * self.scale_factor) for point in polygon_points]
+            polygon_obj = QPolygon(poly)
+            if polygon_obj.containsPoint(pos, Qt.OddEvenFill):
+                selected_polygon.append(polygon)
+                selected_polygon_id.append(polygon['id'])
+        if selected_polygon:
+            # print(f"Selected Polygon: {selected_polygon}")
+            closest_polygon = min(selected_polygon, key=lambda polygon: self.calculate_polygon_area(polygon))
+            # print(f"Selected Polygon: {closest_polygon}")
+            # print(f"Selected Polygon: {closest_polygon['id']}")
+            self.selected_object = closest_polygon["id"]
+    
+    @staticmethod
+    def calculate_polygon_area(polygon):
+        area = 0
+        polygon = QPolygon(polygon['polygon'])
+        for i in range(polygon.count()):
+            j = (i + 1) % polygon.count()
+            area += polygon.point(i).x() * polygon.point(j).y()
+            area -= polygon.point(j).x() * polygon.point(i).y()
+        return abs(area) / 2
+
+    def move_polygon(self, new_pos):
+        if self.selected_object is not None:
+            poly = self.get_selected_object()
+            dx = new_pos.x() - self.last_mouse_position.x()
+            dy = new_pos.y() - self.last_mouse_position.y()
+            for i, point in enumerate(poly['polygon']):
+                poly['polygon'][i] = QPoint(point.x() + dx, point.y() + dy)
+            bbox = QPolygon(poly['polygon']).boundingRect()
+            poly['bbox'] = [bbox.x(), bbox.y(), bbox.width(), bbox.height()]
+            self.last_mouse_position = new_pos
+    
+    def move_polygon_vertex(self, new_pos):
+        if self.selected_object is not None:
+            poly = self.get_selected_object()
+            if poly is not None:
+                poly['polygon'][self.selected_vertex] = new_pos
+                bbox = QPolygon(poly['polygon']).boundingRect()
+                print(f"Bounding Box in mover polygon vertex: {bbox}")
+                poly['bbox'] = [bbox.x(), bbox.y(), bbox.width(), bbox.height()]
+                print(f"Bounding Box in mover polygon vertex: {poly['bbox']}")
+    
+    def add_point_to_polygon(self, new_pos):
+        if self.selected_object is not None:
+            poly = self.get_selected_object()
+            if poly is not None:
+                poly['polygon'].insert(self.line_segment[1], new_pos)
+                bbox = QPolygon(poly['polygon']).boundingRect()
+                poly['bbox'] = [bbox.x(), bbox.y(), bbox.width(), bbox.height()]
+    
+    def remove_point_from_polygon(self, point_index):
+        if self.selected_object is not None:
+            poly = self.get_selected_object()
+            if poly is not None:
+                poly['polygon'].pop(point_index)
+                bbox = QPolygon(poly['polygon']).boundingRect()
+                poly['bbox'] = [bbox.x(), bbox.y(), bbox.width(), bbox.height()]
+    
+    def find_polygon_to_edit(self, click_pos):
+        for polygon in reversed(self.rectangles):
+            poly = polygon['polygon']
+            polygon_obj = QPolygon(poly)
+            
+            # Check if click_pos is near any vertex of the polygon
+            for i, point in enumerate(poly):
+                if CanvasWidget.distance(QPoint(point.x(), point.y()), click_pos) <= 10:
+                    return polygon['id'], i, None
+            
+            # Check if click_pos is on any line segment of the polygon
+            for i, point in enumerate(poly):
+                v = QPoint(point.x(), point.y())
+                w = QPoint(poly[(i + 1) % len(poly)].x(), poly[(i + 1) % len(poly)].y())
+                # print(f"V: {v}, W: {w}")
+                # print(f"Click Pos: {click_pos}")
+                if CanvasWidget.distance_to_line_segment(click_pos, v, w) <= 10:
+                    return polygon['id'], None, (i, (i + 1) % len(poly))
+
+        return None, None, None
 
     def select_label_from_label_list(self):
         """Generate a label selection popup dialog."""
@@ -463,7 +703,9 @@ class CanvasWidget(QLabel):
             category_id = anno['category_id']
             id = anno['id']
             bbox = anno['bbox']
-            self.rectangles.append({"category_id": category_id, "bbox": bbox, "id": id})
+            poly = anno['segmentation']
+            polygon = QPolygon([QPoint(poly[i], poly[i+1]) for i in range(0, len(poly), 2)])
+            self.rectangles.append({"category_id": category_id, "bbox": bbox, "id": id, "polygon": polygon})
         if len(self.rectangles) > 0:
             self.object_list_action_slot.emit([self.rectangles], OBJECT_LIST_ACTION.UPDATE)
         print(f"Rectangles: {len(self.rectangles)}")
@@ -483,7 +725,11 @@ class CanvasWidget(QLabel):
             id = rect['id']
             x, y, w, h = rect['bbox'][0], rect['bbox'][1], rect['bbox'][2], rect['bbox'][3]
             area = w * h
-            segmentation = [[x, y, x + w, y, x + w, y + h, x, y + h]]
+            polygon = []
+            for point in rect['polygon']:
+                polygon.append(point.x())
+                polygon.append(point.y())
+            segmentation = polygon
             iscrowd = 0
             annotations.append({
                 "id": id,
@@ -505,14 +751,14 @@ class CanvasWidget(QLabel):
             self.object_list_action_slot.emit([None], OBJECT_LIST_ACTION.CLEAR)
             self.annotation_mode = ANNOTATION_MODE.NONE
         elif self.annotation_mode == ANNOTATION_MODE.DELETE:
-            if self.selected_rectangles is not None:
+            if self.selected_object is not None:
                 for idx, rect in enumerate(self.rectangles):
-                    if rect["id"] == self.selected_rectangles:
+                    if rect["id"] == self.selected_object:
                         self.rectangles.pop(idx)
                         self.object_list_action_slot.emit([self.rectangles], OBJECT_LIST_ACTION.REMOVE)
-                        self.selected_rectangles = None
+                        self.selected_object = None
                         break
-                self.selected_rectangles = None
+                self.selected_object = None
             self.annotation_mode = ANNOTATION_MODE.CREATE
         elif self.annotation_mode == ANNOTATION_MODE.EDIT:
             pass
@@ -524,6 +770,6 @@ class CanvasWidget(QLabel):
 
     def select_object(self, object_id):
         if object_id == -1:
-            self.selected_rectangles = None
+            self.selected_object = None
         else:
-            self.selected_rectangles = object_id
+            self.selected_object = object_id
