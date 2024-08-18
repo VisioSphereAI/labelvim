@@ -1,5 +1,6 @@
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
+from labelvim.utils.config import ANNOTATION_TYPE
 
 class TaskSelectionDialog(QtWidgets.QDialog):
     """
@@ -39,7 +40,9 @@ class TaskSelectionDialog(QtWidgets.QDialog):
         
         # Add a combo box with a dropdown list of tasks
         self.comboBox = QtWidgets.QComboBox(self)
-        self.comboBox.addItems(["Object Detection", "Segmentation"])
+        for task in ANNOTATION_TYPE:
+            self.comboBox.addItem(task.name)
+        # self.comboBox.addItems(["Object Detection", "Segmentation", "NONE"])
         layout.addWidget(self.comboBox)
         
         # Add an OK button with a custom style
@@ -65,4 +68,14 @@ class TaskSelectionDialog(QtWidgets.QDialog):
         Returns:
             str: The selected task, either 'Object Detection' or 'Segmentation'.
         """
-        return self.comboBox.currentText()
+        # index = self.comboBox.currentIndex()
+        current_text = self.comboBox.currentText()
+        if current_text == "BBOX":
+            return ANNOTATION_TYPE.BBOX
+        elif current_text == "POLYGON":
+            return ANNOTATION_TYPE.POLYGON
+        elif current_text == "NONE":
+            return ANNOTATION_TYPE.NONE
+        else:
+            return ANNOTATION_TYPE.NONE
+        # return self.comboBox.currentText()
