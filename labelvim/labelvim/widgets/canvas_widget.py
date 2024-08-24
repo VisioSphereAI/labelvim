@@ -312,6 +312,7 @@ class CanvasWidget(QLabel):
 
     def paintEvent(self, event):
         super().paintEvent(event)
+        # print("self.rectangles: ", self.rectangles)
         if self.current_pixmap:
             painter = QPainter(self)
             offset_x = (self.width() - self.current_pixmap.width()) // 2
@@ -320,8 +321,9 @@ class CanvasWidget(QLabel):
             # print(f"offset_x: {offset_x}, offset_y: {offset_y}")
             painter.setPen(QPen(self.pen_color, 2, Qt.SolidLine))
             painter.setBrush(QBrush(self.brush_color))
-
+            # print(f"Annotation Type: {self.annotation_type}")
             if self.annotation_type == ANNOTATION_TYPE.BBOX:
+                # print(f"self.rectangles: {self.rectangles}")
                 if self.start_point and self.end_point:
                     # painter.setPen(QPen(QColor(0, 0, 255), 2, Qt.SolidLine))
                     
@@ -352,6 +354,7 @@ class CanvasWidget(QLabel):
                     painter.setPen(QPen(QColor(0,0,0), 2, Qt.SolidLine))
                     painter.drawText(rect.topLeft().x(), rect.topLeft().y() - 5, text_label)
             elif self.annotation_type == ANNOTATION_TYPE.POLYGON:
+                # print(f"self.rectangles: {self.rectangles}")
                 if self.polygon_points:
                     polygon_points = [QPoint(offset_x+int(point.x() * self.scale_factor), offset_y+int(point.y() * self.scale_factor)) for point in self.polygon_points]
                     polgon = QPolygon(polygon_points)

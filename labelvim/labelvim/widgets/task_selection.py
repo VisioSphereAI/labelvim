@@ -41,7 +41,8 @@ class TaskSelectionDialog(QtWidgets.QDialog):
         # Add a combo box with a dropdown list of tasks
         self.comboBox = QtWidgets.QComboBox(self)
         for task in ANNOTATION_TYPE:
-            self.comboBox.addItem(task.name)
+            if task.name != "NONE":
+                self.comboBox.addItem(task.name)
         # self.comboBox.addItems(["Object Detection", "Segmentation", "NONE"])
         layout.addWidget(self.comboBox)
         

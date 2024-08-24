@@ -106,7 +106,7 @@ def create_mask(image=None, annotations=None, label_map=None, include_img = Fals
         elif mask_type == 'bbox':
             bbox = annotation['bbox']
             x, y, w, h = bbox
-            cv2.rectangle(mask, (x, y), (x + w, y + h), random_colors_palette[annotation['category_id']].tolist(), -1)
+            cv2.rectangle(mask, (x, y), (x + w, y + h), random_colors_palette[annotation['category_id']].tolist(), 2)
             label = label_map[annotation['category_id']]
             cv2.putText(mask, label, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
     if include_img and image is not None:

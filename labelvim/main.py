@@ -10,6 +10,8 @@ from labelvim.utils.config import ANNOTATION_TYPE, ANNOTATION_MODE, OBJECT_LIST_
 from labelvim.widgets.task_selection import TaskSelectionDialog
 from labelvim.widgets.canvas_widget import CanvasWidget
 from labelvim.widgets.list_widgets import CustomListViewWidget, CustomLabelWidget, CustomObjectListWidget
+from labelvim.widgets.export_file import ExportFileDialog
+from labelvim.utils.config import ConfigSpecHandler
 
 
 class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -29,6 +31,8 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         self.label_file_name = 'label.yaml'
         self.save_mask = False
         self.include_img = False
+        self.config_file_name = 'config.yaml'
+        self.config_manager = None
 
         # Custom Widgets
         self.FileListWidget = CustomListViewWidget(self.centralwidget)
@@ -68,10 +72,12 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionZoom_In.triggered.connect(self.__zoom_in)
         self.actionZoom_Out.triggered.connect(self.__zoom_out)
         self.actionFit_Windows.triggered.connect(self.__zoom_fit)
+        self.actionExport.triggered.connect(self.__handel_export)
+        # self.actionAnnotation_Type.triggered.connect(self.show_task_selection_dialog)
 
         self.show()
         self.__disable_btn_at_start()
-        self.show_task_selection_dialog()
+        # self.show_task_selection_dialog()
         
         # self.LabelWidget.update_annotation_type(self.annotation_type)
 
@@ -83,6 +89,7 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Display.object_list_action_slot.connect(self.update_data_to_ObjectListWidget)
         self.LabelWidget.update_label_list_slot_transmitter.connect(self.update_label_list_to_Display)
         self.ObjectLabelListWidget.object_selection_notification_slot.connect(self.Display.object_selection_notification_slot_receiver)
+        
         self.json_writer = None
         #
         self.annotaion_manager = None
@@ -94,6 +101,7 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         Displays a custom dialog when the GUI starts, asking the user to choose 
         between object detection or segmentation.
         """
+        # if self.annotation_type == ANNOTATION_TYPE.NONE:
         dialog = TaskSelectionDialog(self)
         if dialog.exec_():
             annotation_type = dialog.selected_task()
@@ -101,6 +109,13 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.annotation_type = annotation_type
                 self.LabelWidget.update_annotation_type(self.annotation_type)
                 self.Display.update_annotation_type(self.annotation_type)
+        # dialog = TaskSelectionDialog(self)
+        # if dialog.exec_():
+        #     annotation_type = dialog.selected_task()
+        #     if annotation_type != ANNOTATION_TYPE.NONE:
+        #         self.annotation_type = annotation_type
+        #         self.LabelWidget.update_annotation_type(self.annotation_type)
+        #         self.Display.update_annotation_type(self.annotation_type)
 
 
     def __load_directory(self):
@@ -167,6 +182,50 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.save_dir = QFileDialog.getExistingDirectory(self, "Select Save Directory")
         if self.save_dir:
+            if not os.path.exists(os.path.join(self.save_dir, 'config.yaml')):
+                print("Config file not found")
+                self.config_file_name = 'config.yaml'
+                self.show_task_selection_dialog()
+                self.config_manager = ConfigSpecHandler(os.path.join(self.save_dir, self.config_file_name))
+                self.config_parm = self.config_manager.get_config()
+                self.config_parm['annotation_type'] = self.annotation_type.value
+                self.config_parm['save_mask'] = self.save_mask
+                self.config_parm['include_img'] = self.include_img
+                self.config_manager.update_config(self.config_parm)
+            else:
+                self.config_file_name = 'config.yaml'
+                print("Config file found")
+                self.config_manager = ConfigSpecHandler(os.path.join(self.save_dir, self.config_file_name))
+                self.config_parm = self.config_manager.get_config()
+                print(f"Config Parm: {self.config_parm}")
+                if 'annotation_type' in self.config_parm.keys():
+                    print(f"Annotation Type: {self.config_parm['annotation_type']}")
+                    self.annotation_type = ANNOTATION_TYPE(self.config_parm['annotation_type'])
+                    print(f"Annotation Type: {self.annotation_type}")
+                    if self.annotation_type == ANNOTATION_TYPE.NONE:
+                        self.show_task_selection_dialog()
+                        self.config_parm['annotation_type'] = self.annotation_type.value
+                    else:
+                        self.LabelWidget.update_annotation_type(self.annotation_type)
+                        self.Display.update_annotation_type(self.annotation_type)
+                else:
+                    self.show_task_selection_dialog()
+                    self.config_parm['annotation_type'] = self.annotation_type.value
+                if 'save_mask' in self.config_parm.keys():
+                    self.save_mask = self.config_parm['save_mask']
+                else:
+                    self.save_mask = False
+                self.config_parm['save_mask'] = self.save_mask
+                self.__change_icon_save_mask()
+                if 'include_img' in self.config_parm.keys():
+                    self.include_img = self.config_parm['include_img']
+                else:
+                    self.include_img = False
+                self.config_parm['include_img'] = self.include_img
+                self.__change_icon_save_mask_include_img()
+                self.config_manager.update_config(self.config_parm)
+                
+            self.LabelWidget.update_annotation_type(self.annotation_type)
             print(f"Save Directory: {self.save_dir}")
 
             # Get list of JSON files in the selected directory
@@ -446,9 +505,8 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         self.save_dir = ''
         self.current_index = 0
         self.FileListWidget.clear_list()
-        # self.LabelWidget.clear_list()
-        # self.Display.clear_pixmap()
         self.annotaion_mode = ANNOTATION_MODE.NONE
+        self.annotation_type = ANNOTATION_TYPE.NONE
     
     def __disable_btn_at_start(self):
         self.DeleteFileBtn.setEnabled(False)
@@ -524,11 +582,17 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
     def __save_mask_flag_set(self):
         self.save_mask = not self.save_mask
         print(f"Save Mask: {self.save_mask}")
+        if self.config_manager is not None:
+            self.config_parm['save_mask'] = self.save_mask
+            self.config_manager.update_config(self.config_parm)
         self.__change_icon_save_mask()
     
     def __save_mask_include_img_flag_set(self):
         self.include_img = not self.include_img
         print(f"Save Mask Include Image: {self.include_img}")
+        if self.config_manager is not None:
+            self.config_parm['include_img'] = self.include_img
+            self.config_manager.update_config(self.config_parm)
         self.__change_icon_save_mask_include_img()
     
     def __change_icon_save_mask(self):
@@ -545,7 +609,15 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
     
     def exit_app(self):
         self.close()
-
+    
+    def __handel_export(self):
+        dialog = ExportFileDialog()
+        dialog.show()
+        if dialog.exec_():
+            print('Task Type:', dialog.task_type)
+            print('Export Type:', dialog.export_type)
+            print('Include Mask:', dialog.include_mask)
+            
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     window = LabelVim()
