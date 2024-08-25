@@ -758,9 +758,12 @@ class CanvasWidget(QLabel):
                 for idx, rect in enumerate(self.rectangles):
                     if rect["id"] == self.selected_object:
                         self.rectangles.pop(idx)
-                        self.object_list_action_slot.emit([self.rectangles], OBJECT_LIST_ACTION.REMOVE)
                         self.selected_object = None
                         break
+                # update the new object id
+                for idx, rect in enumerate(self.rectangles):
+                    rect["id"] = idx
+                self.object_list_action_slot.emit([self.rectangles], OBJECT_LIST_ACTION.REMOVE)
                 self.selected_object = None
             self.annotation_mode = ANNOTATION_MODE.CREATE
         elif self.annotation_mode == ANNOTATION_MODE.EDIT:
