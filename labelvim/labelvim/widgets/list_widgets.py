@@ -504,7 +504,9 @@ class CustomObjectListWidget(QtWidgets.QListView):
         # Update the label list and model
         self.category_id = category_id
         self.object_id = object_id
-        object_list = [f"{self.label_list[id]}" for id in category_id]
+        print(f"Category ID: {category_id}")
+        print(f"Object ID: {object_id}")
+        object_list = [f"{self.label_list[id]} ({object_id[idx]})" for idx, id in enumerate(category_id)]
         # update the model
         self.model.setStringList(object_list)
         
@@ -528,7 +530,8 @@ class CustomObjectListWidget(QtWidgets.QListView):
         # Add the new label to the list
         self.object_id.append(object_id)
         self.category_id.append(category_id)
-        object_list = [f"{self.label_list[id]}" for id in self.category_id]
+        # object_list = [f"{self.label_list[id]}_{object_id[id]}" for id in self.category_id]
+        object_list = [f"{self.label_list[id]} ({object_id[idx]})" for idx, id in enumerate(category_id)]
         # Update the model
         self.model.setStringList(object_list)
     
@@ -558,7 +561,8 @@ class CustomObjectListWidget(QtWidgets.QListView):
             index = self.object_id.index(object_id)
             self.category_id[index] = category_id
             self.object[object_id] = category_id
-            object_list = [f"{self.label_list[id]}" for id in self.category_id] 
+            object_list = [f"{self.label_list[id]} ({object_id[idx]})" for idx, id in enumerate(category_id)]
+            # object_list = [f"{self.label_list[id]}_{object_id[id]}" for id in self.category_id] 
             self.model.setStringList(object_list)
     
     def refresh_list(self, label_list: list):
@@ -566,7 +570,8 @@ class CustomObjectListWidget(QtWidgets.QListView):
         Refresh the list view
         """
         self.label_list = label_list
-        object_list = [f"{self.label_list[id]}" for id in self.category_id]
+        object_list = [f"{self.label_list[id]} ({self.object_id[idx]})" for idx, id in enumerate(self.category_id)]
+        # object_list = [f"{self.label_list[id]}_{id}" for id in self.category_id]
         self.model.setStringList(object_list)
     
     def on_item_clicked(self, index):
