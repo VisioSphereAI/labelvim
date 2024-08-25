@@ -14,6 +14,7 @@ class LabelPopup(QDialog):
         self.annotation_type = annotation_type
         self.selected_item = None
         self.selected_index = None
+        self.text_filter = False
         self.select_id = -1
         self.id = [-1]
         self.layout = QVBoxLayout(self)
@@ -28,6 +29,7 @@ class LabelPopup(QDialog):
             line_edit_id_combo_layout.addWidget(label)
             self.id_combo = QComboBox(self)
             self.update_id_combo()
+            self.id_combo.currentIndexChanged.connect(self.update_list_widget)
             # self.id_combo.addItems([str(i) for i in self.id])
             line_edit_id_combo_layout.addWidget(self.id_combo)
         self.layout.addLayout(line_edit_id_combo_layout)
@@ -58,6 +60,7 @@ class LabelPopup(QDialog):
         self.id_combo.addItems(self.id)
 
     def filter_items(self, text):
+        self.text_filter = True
         """Filter the items in the list based on the text."""
         self.list_widget.clear()
         filtered_items = [item for item in self.items if text.lower() in item.lower()]
@@ -67,6 +70,25 @@ class LabelPopup(QDialog):
             self.id = [str(-1)]
             self.id = self.id + [str(i['id']) for item in filtered_items for i in self.data if item.lower() == self.items[i["category_id"]].lower()]
             self.id_combo.addItems(self.id)
+        self.text_filter = False
+    
+    def update_list_widget(self):
+        if not self.text_filter:
+            self.list_widget.clear()
+            if self.id_combo.currentText() == str(-1):
+                self.list_widget.addItems(self.items)
+            else:
+                id = int(self.id_combo.currentText())
+                print(f" id in labepuop: {id}")
+                for i in self.data:
+                    if i["id"] == id:
+                        category_id = int(i["category_id"])
+                        break
+
+            # category_id = int(self.data[id]["category_id"])
+
+            self.list_widget.addItems([self.items[category_id]])
+            # self.list_widget.addItems([item for item in self.items if item.lower() == self.items[int(self.id_combo.currentText())].lower()])
         
     
     def add_item(self):
