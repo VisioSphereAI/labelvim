@@ -109,14 +109,6 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.annotation_type = annotation_type
                 self.LabelWidget.update_annotation_type(self.annotation_type)
                 self.Display.update_annotation_type(self.annotation_type)
-        # dialog = TaskSelectionDialog(self)
-        # if dialog.exec_():
-        #     annotation_type = dialog.selected_task()
-        #     if annotation_type != ANNOTATION_TYPE.NONE:
-        #         self.annotation_type = annotation_type
-        #         self.LabelWidget.update_annotation_type(self.annotation_type)
-        #         self.Display.update_annotation_type(self.annotation_type)
-
 
     def __load_directory(self):
         """
@@ -444,8 +436,8 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.annotaion_manager = AnnotationManager(self.save_dir, current_image + '.json')
                 self.annotaion_manager.update_basic_info(
                     os.path.basename(self.img_file_list[self.current_index]),
-                    self.Display.original_pixmap.width(),
-                    self.Display.original_pixmap.height()
+                    self.Display.original_pixmap.height(),
+                    self.Display.original_pixmap.width()
                 )
                 self.annotaion_data = self.annotaion_manager.annotation
             
@@ -611,12 +603,21 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         self.close()
     
     def __handel_export(self):
-        dialog = ExportFileDialog()
-        dialog.show()
-        if dialog.exec_():
-            print('Task Type:', dialog.task_type)
-            print('Export Type:', dialog.export_type)
-            print('Include Mask:', dialog.include_mask)
+        if self.save_dir:
+            dialog = ExportFileDialog(save_dir=self.save_dir, data_dir=self.load_dir)
+            dialog.show()
+            if dialog.exec_():
+                print('Task Type:', dialog.task_type)
+                print('Export Type:', dialog.export_type)
+                print('Include Mask:', dialog.include_mask)
+        else:
+            self.msg_dialog("Save Directory Not Selected", "Please select the save directory first.")
+        # dialog = ExportFileDialog()
+        # dialog.show()
+        # if dialog.exec_():
+        #     print('Task Type:', dialog.task_type)
+        #     print('Export Type:', dialog.export_type)
+        #     print('Include Mask:', dialog.include_mask)
             
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

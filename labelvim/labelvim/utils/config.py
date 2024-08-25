@@ -22,18 +22,20 @@ class OBJECT_LIST_ACTION(Enum):
     EDIT = 5
     NONE = 6
 
-class TaskType(Enum):
-    OBJECT_DETECTION = 0
-    SEGMENTATION = 1
-    POSE = 2
-    CLASSIFICATION = 3
+# class TaskType(Enum):
+#     OBJECT_DETECTION = 0
+#     SEGMENTATION = 1
+#     POSE = 2
+#     CLASSIFICATION = 3
 
 
 class ExportType(Enum):
-    YOLOV5 = 0
-    YOLOV8 = 1
-    PASCAL_VOC = 2
-    COCO = 3
+    COCO = 0
+    PASCAL_VOC = 1
+    YOLOV5 = 2
+    YOLOV7 = 3
+    YOLOV8 = 4
+    YOLOV9 = 5
 
 import yaml
 class ConfigSpecHandler:
