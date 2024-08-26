@@ -1,0 +1,9 @@
+PyQt5
+numpy
+pillow
+opencv-python
+opencv-contrib-python
+PyYAML
+tqdm
+shutils
+zip_files
