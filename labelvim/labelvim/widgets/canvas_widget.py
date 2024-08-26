@@ -5,8 +5,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5 import QtWidgets, QtCore
-from labelvim.widgets.label_pupop import LabelPopup
-from labelvim.utils.config import ANNOTATION_MODE, OBJECT_LIST_ACTION, ANNOTATION_TYPE
+from labelvim.labelvim.widgets.label_pupop import LabelPopup
+from labelvim.labelvim.utils.config import ANNOTATION_MODE, OBJECT_LIST_ACTION, ANNOTATION_TYPE
 from enum import Enum
 
 class CanvasWidget(QLabel):

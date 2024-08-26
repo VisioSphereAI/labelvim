@@ -1,4 +1,9 @@
 from enum import Enum
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[2]
+print(f"ROOT: {ROOT}")
 
 class ANNOTATION_TYPE(Enum):
     BBOX = 1

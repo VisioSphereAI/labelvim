@@ -1,7 +1,7 @@
 import os
 import yaml
 import json
-from labelvim.utils.save_mask import random_colors_palette, create_mask, save_mask
+from labelvim.labelvim.utils.save_mask import random_colors_palette, create_mask, save_mask
 
 ANNOTATION_LABEL = "label.json"
 # bounding box format: [x, y, width, height]

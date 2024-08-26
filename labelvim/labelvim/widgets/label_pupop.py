@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QLabel ,QDialog, QVBoxLayout, QHBoxLayout, QLineEdit, QListWidget, QPushButton, QMessageBox, QComboBox
 from PyQt5.QtCore import Qt, pyqtSignal
 from enum import Enum
-from labelvim.utils.config import ANNOTATION_TYPE
+from labelvim.labelvim.utils.config import ANNOTATION_TYPE
 
 class LabelPopup(QDialog):
     def __init__(self, items: list, data: list, annotation_type: Enum, update_label_list_slot_transmitter: pyqtSignal, parent=None):

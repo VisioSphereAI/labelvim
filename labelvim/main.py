@@ -1,17 +1,18 @@
 import sys
 import os
 from PyQt5 import QtWidgets
-from layout import Ui_MainWindow
+from labelvim.labelvim.utils.config import ROOT
+from labelvim.layout import Ui_MainWindow
 from PyQt5.QtWidgets import QFileDialog, QApplication
-from labelvim.utils.utils import get_image_list, return_mattching
-from labelvim.utils.annotaion_manager import AnnotationManager
-from labelvim.utils.lablelist_reader import label_list_reader as label_list_manager
-from labelvim.utils.config import ANNOTATION_TYPE, ANNOTATION_MODE, OBJECT_LIST_ACTION
-from labelvim.widgets.task_selection import TaskSelectionDialog
-from labelvim.widgets.canvas_widget import CanvasWidget
-from labelvim.widgets.list_widgets import CustomListViewWidget, CustomLabelWidget, CustomObjectListWidget
-from labelvim.widgets.export_file import ExportFileDialog
-from labelvim.utils.config import ConfigSpecHandler
+from labelvim.labelvim.utils.utils import get_image_list, return_mattching
+from labelvim.labelvim.utils.annotaion_manager import AnnotationManager
+from labelvim.labelvim.utils.lablelist_reader import label_list_reader as label_list_manager
+from labelvim.labelvim.utils.config import ANNOTATION_TYPE, ANNOTATION_MODE, OBJECT_LIST_ACTION
+from labelvim.labelvim.widgets.task_selection import TaskSelectionDialog
+from labelvim.labelvim.widgets.canvas_widget import CanvasWidget
+from labelvim.labelvim.widgets.list_widgets import CustomListViewWidget, CustomLabelWidget, CustomObjectListWidget
+from labelvim.labelvim.widgets.export_file import ExportFileDialog
+from labelvim.labelvim.utils.config import ConfigSpecHandler
 
 
 class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -618,9 +619,15 @@ class LabelVim(QtWidgets.QMainWindow, Ui_MainWindow):
         #     print('Task Type:', dialog.task_type)
         #     print('Export Type:', dialog.export_type)
         #     print('Include Mask:', dialog.include_mask)
-            
-if __name__ == '__main__':
+def main():
     app = QtWidgets.QApplication(sys.argv)
     window = LabelVim()
     window.show()
     sys.exit(app.exec_())
+
+if __name__ == '__main__':
+    main()
+    # app = QtWidgets.QApplication(sys.argv)
+    # window = LabelVim()
+    # window.show()
+    # sys.exit(app.exec_())

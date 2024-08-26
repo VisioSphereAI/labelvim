@@ -1,6 +1,6 @@
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
-from labelvim.utils.config import ANNOTATION_TYPE
+from labelvim.labelvim.utils.config import ANNOTATION_TYPE
 
 class TaskSelectionDialog(QtWidgets.QDialog):
     """

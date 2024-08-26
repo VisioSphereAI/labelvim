@@ -2,8 +2,8 @@ from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QGroupBox, QLabel, QRadioButton, QComboBox, QPushButton, QMessageBox,
     QCheckBox, QSlider, QWidget, QFormLayout, QFileDialog, QProgressDialog
 )
-from labelvim.utils.config import ANNOTATION_TYPE, ExportType
-from labelvim.utils.lablelist_reader import LabelListReader
+from labelvim.labelvim.utils.config import ANNOTATION_TYPE, ExportType
+from labelvim.labelvim.utils.lablelist_reader import LabelListReader
 from PyQt5.QtCore import Qt
 from enum import Enum
 import yaml
@@ -16,7 +16,7 @@ import shutil
 import time
 import numpy as np
 import random
-from labelvim.utils.save_mask import random_colors_palette
+from labelvim.labelvim.utils.save_mask import random_colors_palette
 from tqdm import tqdm
 
 def xywh2xyxy(x, y, w, h):

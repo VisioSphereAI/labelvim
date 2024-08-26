@@ -1,5 +1,5 @@
 import yaml
-from labelvim.utils.utils import get_project_root  # Utility function to get the project root directory
+from labelvim.labelvim.utils.utils import get_project_root  # Utility function to get the project root directory
 
 import os
 
