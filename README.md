@@ -72,9 +72,10 @@ This is a python based standalone image annotation tool designed for tasks such 
 </h1>
 
 <h1 align="center">
-  <img width = "29%" src="resource/object_detection_annotation_screentshot/1832.png">
-  <img width = "29%" src="resource/object_detection_annotation_screentshot/1831.png">
-  <img width = "29%" src="resource/object_detection_annotation_screentshot/177.png">
+  <img width = "22%" src="resource/object_detection_annotation_screentshot/1832.png">
+  <img width = "22%" src="resource/object_detection_annotation_screentshot/1831.png">
+  <img width = "22%" src="resource/object_detection_annotation_screentshot/177.png">
+  <img width = "22%" src="resource/object_detection_annotation_screentshot/56.png">
 </h1>
 
 ## Features
