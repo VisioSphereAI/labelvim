@@ -164,7 +164,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-If you have any questions or suggestions, feel free to open an issue or contact me directly at [amishkumar562@gmail.com](mailto:amishkumar562@gmail.com).
+If you have any questions or suggestions, feel free to open an issue or contact us directly at [pdas28oct@gmail.com](mailto:pdas28oct@gmail.com) or [amishkumar562@gmail.com](mailto:amishkumar562@gmail.com).
 
 
 ### Notes
