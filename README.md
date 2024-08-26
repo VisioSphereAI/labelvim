@@ -54,16 +54,6 @@
 
 This is a python based standalone image annotation tool designed for tasks such as image segmentation and object detection. The tool allows users to draw bounding boxes, polygons, and freehand paths, edit and manage annotations, and export the annotated data in multiple formats including COCO, YOLO, and PASCAL VOC.
 
-<!-- <h1 align="center">
-  <img width = "30%" src="resource/screen_shot/segmentation_1.png">
-  <img width = "30%" src="resource/screen_shot/segmentation_2.png">
-  <img width = "30%" src="resource/screen_shot/segmentation_3.png">
-  </br>
-  <img width = "30%" src="resource/generated_mask/137_mask.jpg">
-  <img width = "30%" src="resource/generated_mask/140_mask.jpg">
-  <img width = "30%" src="resource/generated_mask/177_mask.jpg">
-</h1> -->
-
 <h1 align="center">
   <img width = "22%" src="resource/gif/segmentation/1.gif">
   <img width = "22%" src="resource/gif/segmentation/2.gif">
