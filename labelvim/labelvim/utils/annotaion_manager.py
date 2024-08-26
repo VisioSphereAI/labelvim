@@ -1,6 +1,7 @@
 import os
 import yaml
 import json
+from labelvim.utils.save_mask import random_colors_palette, create_mask, save_mask
 
 ANNOTATION_LABEL = "label.json"
 # bounding box format: [x, y, width, height]
@@ -208,6 +209,28 @@ class AnnotationManager:
         """
         with open(os.path.join(self.save_dir, self.file_name), 'w') as file:
             json.dump(self.annotation, file, indent=4)
+    
+    def save_mask(self, label_map, image_data=None, include_img=True, mask_type='polygon'):
+        """
+        Create a mask from the image and annotations.
+        
+        Args:
+            label_map (list): The list of label names.
+            image_data (np.ndarray): The image to create the mask from.
+            include_img (bool): Whether to include the image in the mask.
+            mask_type (str): The type of mask to create ('polygon' or 'bbox').
+        
+        Returns:
+            np.ndarray: The mask.
+            
+        Example:
+            >>> mask = manager.create_mask()
+        """
+        file_name = self.annotation["imagePath"]
+        annotations = self.annotation["annotations"]
+        label_map = label_map
+        mask = create_mask(image=image_data, annotations=annotations, label_map=label_map, include_img=include_img, mask_type=mask_type)
+        save_mask(mask, self.save_dir, file_name)
     
 
     

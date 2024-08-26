@@ -234,7 +234,7 @@ class CustomLabelWidget(QtWidgets.QListView):
         self.delegate = CustomDelegate(self)
         self.setItemDelegate(self.delegate)
         # Set the annotation type to None
-        self.annotation_type = "Rectangle"
+        self.annotation_type = ANNOTATION_TYPE.NONE
         # Connect the signals
         self.update_label_list_slot_receiver.connect(self.__update_list) # Connect the signal to update the label list
         self.model.dataChanged.connect(self.on_data_changed)  # Connect the dataChanged signal
@@ -298,11 +298,12 @@ class CustomLabelWidget(QtWidgets.QListView):
             annotation_type (str): The new annotation type to use.
         """
         # Set the annotation type based on the provided value
-        self.annotation_type = {
-            "Object Detection": "Rectangle",
-            "Segmentation": "Polygon"
-        }.get(annotation_type, "None")
+        # self.annotation_type = {
+        #     "Object Detection": ANNOTATION_TYPE.BBOX,
+        #     "Segmentation": ANNOTATION_TYPE.POLYGON
+        # }.get(annotation_type, ANNOTATION_TYPE.NONE)
         # Print the annotation type
+        self.annotation_type = annotation_type
         print(f"Annotation Type: {self.annotation_type}")
     
     def mouseDoubleClickEvent(self, event):
@@ -503,7 +504,9 @@ class CustomObjectListWidget(QtWidgets.QListView):
         # Update the label list and model
         self.category_id = category_id
         self.object_id = object_id
-        object_list = [f"{self.label_list[id]}" for id in category_id]
+        print(f"Category ID: {category_id}")
+        print(f"Object ID: {object_id}")
+        object_list = [f"{self.label_list[id]} ({self.object_id[idx]})" for idx, id in enumerate(self.category_id)]
         # update the model
         self.model.setStringList(object_list)
         
@@ -527,7 +530,8 @@ class CustomObjectListWidget(QtWidgets.QListView):
         # Add the new label to the list
         self.object_id.append(object_id)
         self.category_id.append(category_id)
-        object_list = [f"{self.label_list[id]}" for id in self.category_id]
+        # object_list = [f"{self.label_list[id]}_{object_id[id]}" for id in self.category_id]
+        object_list = [f"{self.label_list[id]} ({self.object_id[idx]})" for idx, id in enumerate(self.category_id)]
         # Update the model
         self.model.setStringList(object_list)
     
@@ -557,7 +561,8 @@ class CustomObjectListWidget(QtWidgets.QListView):
             index = self.object_id.index(object_id)
             self.category_id[index] = category_id
             self.object[object_id] = category_id
-            object_list = [f"{self.label_list[id]}" for id in self.category_id] 
+            object_list = [f"{self.label_list[id]} ({self.object_id[idx]})" for idx, id in enumerate(self.category_id)]
+            # object_list = [f"{self.label_list[id]}_{object_id[id]}" for id in self.category_id] 
             self.model.setStringList(object_list)
     
     def refresh_list(self, label_list: list):
@@ -565,7 +570,8 @@ class CustomObjectListWidget(QtWidgets.QListView):
         Refresh the list view
         """
         self.label_list = label_list
-        object_list = [f"{self.label_list[id]}" for id in self.category_id]
+        object_list = [f"{self.label_list[id]} ({self.object_id[idx]})" for idx, id in enumerate(self.category_id)]
+        # object_list = [f"{self.label_list[id]}_{id}" for id in self.category_id]
         self.model.setStringList(object_list)
     
     def on_item_clicked(self, index):

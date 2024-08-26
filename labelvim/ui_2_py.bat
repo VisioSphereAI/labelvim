@@ -1,1 +1,0 @@
-pyuic5 -x "Layout".ui -o "layout".py
