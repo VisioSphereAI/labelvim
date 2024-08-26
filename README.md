@@ -71,6 +71,11 @@ This is a python based standalone image annotation tool designed for tasks such 
   <img width = "22%" src="resource/gif/segmentation/4.gif">
 </h1>
 
+<h1 align="center">
+  <img width = "29%" src="resource/object_detection_annotation_screentshot/1832.png">
+  <img width = "29%" src="resource/object_detection_annotation_screentshot/1831.png">
+  <img width = "29%" src="resource/object_detection_annotation_screentshot/177.png">
+</h1>
 
 ## Features
 
@@ -93,7 +98,7 @@ This is a python based standalone image annotation tool designed for tasks such 
 
 ### Prerequisites
 
-- Python 3.x (if using a backend)
+- Python 3.x
 - Git (for version control)
 
 ### Installation
@@ -135,6 +140,7 @@ This is a python based standalone image annotation tool designed for tasks such 
 ## Demo Video
 - [Annotation](resource/videos/Annotation_object.mp4)
 - [Edit Annotation](resource/videos/Edit_annotation.mp4)
+- [Export](resource/videos/Object_segmentation_export.mp4)
 
 ## Contributing
 
