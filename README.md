@@ -63,11 +63,12 @@ This is a python based standalone image annotation tool designed for tasks such 
   <img width = "30%" src="resource/generated_mask/140_mask.jpg">
   <img width = "30%" src="resource/generated_mask/177_mask.jpg">
 </h1> -->
+
 <h1 align="center">
-  <img width = "22%" src="resource/gif/1.gif">
-  <img width = "22%" src="resource/gif/2.gif">
-  <img width = "22%" src="resource/gif/3.gif">
-  <img width = "22%" src="resource/gif/4.gif">
+  <img width = "22%" src="resource/gif/segmentation/1.gif">
+  <img width = "22%" src="resource/gif/segmentation/2.gif">
+  <img width = "22%" src="resource/gif/segmentation/3.gif">
+  <img width = "22%" src="resource/gif/segmentation/4.gif">
 </h1>
 
 
