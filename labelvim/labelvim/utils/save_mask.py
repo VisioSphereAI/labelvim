@@ -80,13 +80,13 @@ def create_mask(image=None, annotations=None, label_map=None, include_img = Fals
                 269
             ],
             "area": 56759,
-            "segmentation": [
+            "segmentation": [[
                 470,
                 387,
                 541,
                 394,
                 599,
-                370
+                370]
             ],
             "iscrowd": 0
         }
@@ -98,11 +98,15 @@ def create_mask(image=None, annotations=None, label_map=None, include_img = Fals
     for annotation in annotations:
         if mask_type == 'polygon':
             segmentation = annotation['segmentation']
-            segmentation = np.array(segmentation).reshape(-1, 2)
-            segmentation = segmentation.astype(np.int32)
-            cv2.fillPoly(mask, [segmentation], color=random_colors_palette[annotation['category_id']].tolist())
+            for polygon in segmentation:
+                polygon = np.array(polygon).reshape(-1, 2)
+                polygon = polygon.astype(np.int32)
+                cv2.fillPoly(mask, [polygon], color=random_colors_palette[annotation['category_id']].tolist())
             label = label_map[annotation['category_id']]
-            cv2.putText(mask, label, (segmentation[0][0], segmentation[0][1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            bbox = annotation['bbox']
+            x, y, w, h = bbox
+            cv2.rectangle(mask, (x, y), (x + w, y + h), random_colors_palette[annotation['category_id']].tolist(), 2)
+            cv2.putText(mask, label, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         elif mask_type == 'bbox':
             bbox = annotation['bbox']
             x, y, w, h = bbox

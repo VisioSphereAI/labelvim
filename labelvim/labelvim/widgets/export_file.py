@@ -187,22 +187,31 @@ class YOLOConversion:
                         cv2.putText(mask, self.label_list[label], (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
                 elif self.annotation_type == ANNOTATION_TYPE.POLYGON:
                     segmentation = annotation['segmentation']
-                    yolov5_segmentation = self._convert_to_yolov5_segmentation_format(segmentation, image_width, image_height)
-                    label_txt.write(f"{label} {yolov5_segmentation}\n")
-                    bbox = annotation['bbox']
-                    segmentation = np.array(segmentation).reshape(-1, 2)
-                    segmentation = segmentation.astype(np.int32)
-                    if self.include_mask:
-                        color = random_colors_palette[label].tolist()
-                        cv2.fillPoly(mask, [segmentation], color)
-                        # cv2.rectangle(mask, (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3]), color, 2)
-                        # cv2.putText(mask, self.label_list[label], (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-                    
-                    if self.include_instance:
-                        color = random.choice(random_colors_palette.tolist())
-                        cv2.fillPoly(instance_image, [segmentation], color)
+                    color = random_colors_palette[label].tolist()
+                    instance_color = random.choice(random_colors_palette.tolist())
+                    for poly in segmentation:
+                        yolov5_segmentation = self._convert_to_yolov5_segmentation_format(poly, image_width, image_height)
+                        label_txt.write(f"{label} {yolov5_segmentation}\n")
+                        poly = np.array(poly).reshape(-1, 2)
+                        poly = poly.astype(np.int32)
+                        if self.include_mask:
+                           
+                            cv2.fillPoly(mask, [poly], color)
+                            # cv2.rectangle(mask, (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3]), color, 2)
+                            # cv2.putText(mask, self.label_list[label], (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+                        
+                        if self.include_instance:
+                            cv2.fillPoly(instance_image, [poly], instance_color)
                         # cv2.rectangle(instance_image, (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3]), color, 2)
                         # cv2.putText(instance_image, self.label_list[label], (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2)
+                    bbox = annotation['bbox']
+                    # bbox = annotation['bbox']
+                    if self.include_mask:
+                        cv2.rectangle(mask, (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3]), color, 2)
+                    if self.include_instance:
+                        # bbox = annotation['bbox']
+                        cv2.rectangle(instance_image, (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3]), instance_color, 2)
+                
             if self.include_img:
                 # cv2.fillPoly(image, [segmentation], (0, 0, 255))
                 # cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3]), (0, 0, 255), 2)
@@ -453,14 +462,22 @@ class COCOConversion:
             instance_image = np.zeros((image_info["height"], image_info["width"],3), dtype=np.uint8)
 
         for annotation in annotation_data['annotations']:
-            segmentation = np.array(annotation['segmentation']).reshape(-1, 2)
-            segmentation = segmentation.astype(np.int32)
+            color = random_colors_palette[annotation["category_id"]].tolist()
+            instance_color = random.choice(random_colors_palette.tolist())
+            for poly in annotation['segmentation']:
+                segmentation = np.array(poly).reshape(-1, 2)
+                segmentation = segmentation.astype(np.int32)
+                if self.include_mask:
+                    cv2.fillPoly(mask, [segmentation], color)
+                if self.include_instance:
+                    cv2.fillPoly(instance_image, [segmentation], instance_color)
+            bbox = annotation['bbox']
             if self.include_mask:
-                color = random_colors_palette[annotation["category_id"]].tolist()
-                cv2.fillPoly(mask, [segmentation], 255)
+                cv2.rectangle(mask, (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3]), color, 2)
             if self.include_instance:
-                color = random.choice(random_colors_palette.tolist())
-                cv2.fillPoly(instance_image, [segmentation], color)
+                # bbox = annotation['bbox']
+                cv2.rectangle(instance_image, (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3]), instance_color, 2)
+                
             
         if self.include_img:
             image = cv2.addWeighted(image, 0.5, mask, 0.5, 0)
