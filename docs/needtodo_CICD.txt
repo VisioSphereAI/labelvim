@@ -1,7 +1,16 @@
-setup.py
+setup.py [Done]
+
+[Need Fast]
+
+Build python package for Linux
+Build python package for windows
+Build docker images
+
 push to pypi repository
 push to anaconda repository
 push to docker hub
+
+[Automatic Version Assignment]
 
 # need automatic testing
 for GUI and Python File
