@@ -7,10 +7,16 @@
 # documentation.
 
 name: Test Python Workflow
-
+run-name: ${{ github.actor }} is testing out GitHub Actions
 on:
-  release:
-    types: [published]
+  push:
+    branches: ["main"]
+jobs:
+  GitHub-Action:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+  
 
 # permissions:
 #   contents: read
