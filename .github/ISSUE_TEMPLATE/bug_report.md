@@ -1,38 +1,42 @@
----
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
-
----
-
-**Describe the bug**
-A clear and concise description of what the bug is.
-
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
-
-**Expected behavior**
-A clear and concise description of what you expected to happen.
-
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
-
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
-
-**Additional context**
-Add any other context about the problem here.
+name: Bug Report
+description: Create a bug report
+labels: 'bug'
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to file a bug report! Please fill out this form as completely as possible.
+  - type: textarea
+    attributes:
+      label: Provide environment information
+      description: Please run `which python; python --version; python -m pip list | grep labelvim` in the root directory of your project and paste the results.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: What OS are you using?
+      description: 'Please specify the exact version. For example: macOS 12.4, Ubuntu 20.04.4'
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+  - type: textarea
+    attributes:
+      label: To Reproduce
+      description: Steps to reproduce the behavior, please provide a clear description of how to reproduce the issue, based on the linked minimal reproduction. Screenshots can be provided in the issue body below. If using code blocks, make sure that syntax highlighting is correct and double check that the rendered preview is not broken.
+  - type: markdown
+    attributes:
+      value: Before posting the issue go through the steps you've written down to make sure the steps provided are detailed and clear.
+  - type: markdown
+    attributes:
+      value: Contributors should be able to follow the steps provided in order to reproduce the bug.
+  - type: markdown
+    attributes:
+      value: These steps are used to add integration tests to ensure the same issue does not happen again. Thanks in advance!
