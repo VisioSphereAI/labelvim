@@ -1,0 +1,1 @@
+This is a python based standalone image annotation tool designed for tasks such as image segmentation and object detection. The tool allows users to draw bounding boxes, polygons, and freehand paths, edit and manage annotations, and export the annotated data in multiple formats including COCO, YOLO, and PASCAL VOC.
